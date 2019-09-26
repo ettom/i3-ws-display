@@ -1,0 +1,6 @@
+*.out
+compile_commands.json
+*.swp
+ac
+build/
+.clangd
