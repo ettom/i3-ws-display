@@ -26,11 +26,10 @@ well for me.
 * Four 220-ohm resistors and wires to connect it all up
 
 #### Setup
-Connect the display to your Arduino and flash the `nano/7seg.ino` file.
-<br>Wiring for a common-cathode display with the following pin arrangement (according
-to the [typical segment identification](https://commons.wikimedia.org/wiki/File:7_Segment_Display_with_Labeled_Segments.svg#/media/File:7_Segment_Display_with_Labeled_Segments.svg)): <br>
-**Top row** - 1, a, f, 2, 3, b
-<br>
+Connect the display to your Arduino and flash the `nano/7seg.ino` file.<br>
+Wiring for a common-cathode display with the following pin arrangement (according
+to the [typical segment identification](https://commons.wikimedia.org/wiki/File:7_Segment_Display_with_Labeled_Segments.svg#/media/File:7_Segment_Display_with_Labeled_Segments.svg)):<br>
+**Top row** - 1, a, f, 2, 3, b <br>
 **Bottom row** - e, d, DP, c, g, 4
 
 ![Fritzing schematic](https://github.com/ettom/i3-ws-display/blob/master/nano/fritzing.png)
@@ -47,14 +46,15 @@ jsoncpp
 sigc++
 ```
 
-This project also uses the [`i3ipcpp`](https://github.com/drmgc/i3ipcpp) library
+This project also uses the [i3ipcpp](https://github.com/drmgc/i3ipcpp) library
 which is pulled and built automatically by cmake.
 
 ### Installation for Ubuntu 18.04
-Get the latest version of [cmake](https://apt.kitware.com/). <br>
-Then run the following command:<br>
+Get the latest version of [cmake](https://apt.kitware.com/).<br>
+Then run the following command:
+
 `sudo apt install pkgconf g++ libjsoncpp-dev libsigc++-2.0-dev libserial-dev`
-<br>
+
 Installing `libserial-dev` might give you a linker error, the
 solution is to uninstall it and build [libserial](https://github.com/crayzeewulf/libserial) from
 source.
