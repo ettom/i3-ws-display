@@ -91,9 +91,13 @@ void resize_string_to_size(std::string& input, size_t target_size)
 
 void always_display_focused_workspace(std::string& workspaces, Config config)
 {
+	if (focused == FOCUSED_NOT_FOUND) {
+		return;
+	}
+
 	bool doesnt_fit_on_display = workspaces.length() > config.DISPLAY_LENGTH;
 	bool focused_workspace_not_displayed = workspaces.find(focused) > config.DISPLAY_LENGTH - 1;
-	if (!focused.empty() && doesnt_fit_on_display && focused_workspace_not_displayed) {
+	if (doesnt_fit_on_display && focused_workspace_not_displayed) {
 		workspaces.erase(workspaces.find(focused), 1);
 		workspaces.insert(config.DISPLAY_LENGTH - 1, focused);
 	}
