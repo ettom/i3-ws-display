@@ -159,7 +159,7 @@ int main()
 		std::stringstream file_contents = read_file(CONFIG_FILE);
 		config = parse_config_file(file_contents);
 	} catch (const char* e) {
-		std::cerr << e;
+		std::cerr << e << std::endl;
 		return EXIT_FAILURE;
 	}
 
