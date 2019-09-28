@@ -115,7 +115,6 @@ void sort_workspace_string(std::string& workspaces, Config config)
 	std::sort(workspaces.begin(), workspaces.end());
 	move_workspace_10_to_end(workspaces);
 	always_display_focused_workspace(workspaces, config);
-	std::cout << workspaces << std::endl;
 	resize_string_to_size(workspaces, config.DISPLAY_LENGTH);
 }
 
@@ -135,7 +134,7 @@ std::string find_workspaces(Config config)
 		}
 	}
 
-	if (! found_focused) {
+	if (!found_focused) {
 		focused = FOCUSED_NOT_FOUND;
 	}
 
