@@ -26,8 +26,7 @@ well for me.
 * Four 220-ohm resistors and wires to connect it all up
 
 #### Setup
-Connect the display to your Arduino. Change `DISPLAY_LENGTH` in the `7seg.ino` file
-to match the number of digits on your display. Flash the `nano/7seg.ino` file.
+Connect the display to your Arduino and flash the `nano/7seg.ino` file.
 <br>Wiring for a common-cathode display with the following pin arrangement (according
 to the [typical segment identification](https://commons.wikimedia.org/wiki/File:7_Segment_Display_with_Labeled_Segments.svg#/media/File:7_Segment_Display_with_Labeled_Segments.svg)): <br>
 **Top row** - 1, a, f, 2, 3, b
