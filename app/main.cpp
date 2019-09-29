@@ -105,7 +105,7 @@ void always_display_focused_workspace(std::string& workspaces, Config config)
 
 void move_workspace_10_to_end(std::string& workspaces)
 {
-	if (workspaces.at(0) == '0') {
+	if (workspaces.size() && workspaces.at(0) == '0') {
 		workspaces.erase(0, 1);
 		workspaces.insert(workspaces.length(), "0");
 	}
