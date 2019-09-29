@@ -66,8 +66,8 @@ git clone https://github.com/ettom/i3-ws-display.git
 cd i3-ws-display
 mkdir build && cd build
 cmake ..
-cmake --build .
-sudo cp -f app/ws_display /usr/local/bin/ws_display
+make
+sudo make install
 ```
 
 
