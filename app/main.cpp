@@ -174,7 +174,7 @@ int main()
 	std::string workspaces;
 	conn.subscribe(i3ipc::ET_WORKSPACE);
 
-	conn.signal_workspace_event.connect([&](const i3ipc::workspace_event_t& ev) {
+	conn.signal_workspace_event.connect([&](__attribute__((unused)) const i3ipc::workspace_event_t&) {
 		workspaces = find_workspaces(config);
 		sort_workspace_string(workspaces, config);
 	});
