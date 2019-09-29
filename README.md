@@ -36,7 +36,7 @@ to the [typical segment identification](https://commons.wikimedia.org/wiki/File:
 
 
 ## Software setup
-Dependencies:
+### Dependencies
 ```
 cmake 3.11+
 pkgconf
@@ -49,7 +49,7 @@ sigc++
 This project also uses the [i3ipcpp](https://github.com/drmgc/i3ipcpp) library
 which is pulled and built automatically by cmake.
 
-### Installation for Ubuntu 18.04
+##### Installing the dependencies for Ubuntu 18.04
 Get the latest version of [cmake](https://apt.kitware.com/).<br>
 Then run the following command:
 
@@ -59,8 +59,8 @@ Installing `libserial-dev` might give you a linker error, the
 solution is to uninstall it and build [libserial](https://github.com/crayzeewulf/libserial) from
 source.
 
-
-Installation:
+### Building
+Run the following commands:
 ```
 git clone https://github.com/ettom/i3-ws-display.git
 cd i3-ws-display
@@ -69,7 +69,6 @@ cmake ..
 cmake --build .
 sudo cp -f app/ws_display /usr/local/bin/ws_display
 ```
-
 
 
 ### Configuration
