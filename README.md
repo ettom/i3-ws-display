@@ -86,7 +86,17 @@ an udev rule for it. I found that the easiest way was to tie it to a USB
 hub port. This works as long as the Arduino is always plugged into the same USB
 port.<br>
 I won't go into writing udev rules here, see the `97-ws_display.rules` file
-for an example. I found [this](https://unix.stackexchange.com/a/326708) post
-helpful.<br>
-I also have a systemd user service that starts `ws_display` as soon as the Arduino
-becomes available. See the `ws_display.service` file.
+for an example. I found [this](https://unix.stackexchange.com/a/326708) post helpful.
+
+If the Arduino will always be connected to your machine you could (and should) just
+start `ws_display` from your i3 config.
+
+I have a laptop and a docking station to which the Arduino is connected to so I'm
+using a systemd user service for starting and stopping `ws_display`. The systemd user
+service starts `ws_display` as soon as the Arduino becomes available. The service
+also depends on a custom `i3.target` which gets started by i3:
+
+`exec_always --no-startup-id systemctl --user start i3.target`
+
+I also put `systemctl --user stop i3.target` in a script that runs when i3 exits. See the
+`systemd/ws_display.service` and `systemd/i3.target` files.
