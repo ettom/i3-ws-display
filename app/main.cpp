@@ -9,12 +9,12 @@
 #include <i3ipc++/ipc.hpp>
 #include <json/json.h>
 
-#define CONFIG_PATH "/.config/ws_display.json" // relative to $HOME
+#define CONFIG_PATH_RELATIVE_TO_HOME "/.config/ws_display.json"
 
-#define WORKSPACES_SENT_DELIMITER "w"
-#define FOCUSED_SENT_DELIMITER    "f"
-#define FOCUSED_NOT_FOUND         "-"
-
+#define WORKSPACES_SENT_DELIMITER     "w"
+#define FOCUSED_SENT_DELIMITER        "f"
+#define FOCUSED_NOT_FOUND             "-"
+#define STARTUP_DELAY_IN_MILLISECONDS 1500
 
 using namespace LibSerial;
 
@@ -138,8 +138,16 @@ std::string find_workspaces(Config config)
 		focused = FOCUSED_NOT_FOUND;
 	}
 
-	sort_workspace_string(workspaces, config);
 	return workspaces;
+}
+
+void startup(std::string workspaces, Config config)
+{
+	// wait for a bit for the Arduino to restart
+	usleep(STARTUP_DELAY_IN_MILLISECONDS * 1000);
+	workspaces = find_workspaces(config);
+	sort_workspace_string(workspaces, config);
+	send_to_arduino(workspaces);
 }
 
 void loop(const std::string& workspaces)
@@ -152,7 +160,7 @@ void loop(const std::string& workspaces)
 
 int main()
 {
-	const std::string CONFIG_FILE = static_cast<std::string>(std::getenv("HOME")) + CONFIG_PATH;
+	const std::string CONFIG_FILE = static_cast<std::string>(std::getenv("HOME")) + CONFIG_PATH_RELATIVE_TO_HOME;
 	Config config;
 
 	try {
@@ -168,7 +176,9 @@ int main()
 
 	conn.signal_workspace_event.connect([&](const i3ipc::workspace_event_t& ev) {
 		workspaces = find_workspaces(config);
+		sort_workspace_string(workspaces, config);
 	});
+
 
 	try {
 		serial_port.Open(config.SERIAL_PORT);
@@ -179,12 +189,8 @@ int main()
 
 	initialize_serial(serial_port);
 
-	// wait for a bit for the arduino to restart
-	usleep(1500 * 1000);
-	send_to_arduino(find_workspaces(config));
-	usleep(100 * 1000);
-
 	try {
+		startup(workspaces, config);
 		loop(workspaces);
 	} catch (const std::runtime_error&) {
 		serial_port.Close();
