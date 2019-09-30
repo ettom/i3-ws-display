@@ -37,10 +37,10 @@ to the [typical segment identification](https://commons.wikimedia.org/wiki/File:
 
 ## Software setup
 ### Dependencies
+A compiler with C++17 support ([clang-5+](http://llvm.org/releases/download.html),
+[gcc-7+](https://gcc.gnu.org/releases.html)), [cmake 3.11+](https://cmake.org/download/), [git](https://git-scm.com/downloads)
 ```
-cmake 3.11+
 pkgconf
-g++
 libserial
 jsoncpp
 sigc++
