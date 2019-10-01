@@ -21,7 +21,7 @@ target_link_libraries(${PROJECT_NAME} jsoncpp)
 
 target_compile_options(${PROJECT_NAME}
 	PRIVATE
-	-Wall -Wextra -pedantic -Wconversion
-	-Wsign-conversion)
+	-Wall -Wextra -Wpedantic -Wconversion
+	-Wsign-conversion -Wshadow)
 
 install(TARGETS ${PROJECT_NAME})
