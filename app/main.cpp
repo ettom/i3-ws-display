@@ -118,13 +118,24 @@ void sort_workspace_string(std::string& workspaces, Config config)
 	resize_string_to_size(workspaces, config.DISPLAY_LENGTH);
 }
 
+std::string ensure_workspace_name_is_numeric(const std::string& workspace_name)
+{
+	auto const n = workspace_name.find_first_of("0123456789");
+	if (n != std::string::npos) {
+		size_t const m = workspace_name.find_first_not_of("0123456789", n);
+		return workspace_name.substr(n, m == std::string::npos ? m : m - n);
+	}
+	return "";
+}
+
 std::string find_workspaces(Config config)
 {
 	std::string workspaces;
 	bool found_focused = false;
 	for (auto& workspace : conn.get_workspaces()) {
 		if (config.OUTPUT.empty() || workspace->output == config.OUTPUT) {
-			std::string workspace_number = (workspace->name == "10") ? "0" : workspace->name;
+			std::string workspace_number = ensure_workspace_name_is_numeric(workspace->name);
+			workspace_number = (workspace_number == "10") ? "0" : workspace_number;
 			if (workspace->focused) {
 				focused = workspace_number;
 				found_focused = true;
