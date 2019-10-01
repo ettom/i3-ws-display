@@ -72,7 +72,7 @@ void send_to_arduino(const std::string& workspaces)
 	serial_port.DrainWriteBuffer();
 }
 
-void initialize_serial(SerialPort& serial_port)
+void initialize_serial()
 {
 	serial_port.SetBaudRate(BaudRate::BAUD_9600);
 	serial_port.SetCharacterSize(CharacterSize::CHAR_SIZE_8);
@@ -198,7 +198,7 @@ int main()
 		return EXIT_FAILURE;
 	}
 
-	initialize_serial(serial_port);
+	initialize_serial();
 
 	try {
 		startup(workspaces, config);
