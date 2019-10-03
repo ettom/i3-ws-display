@@ -38,7 +38,6 @@ std::stringstream read_file(const std::string& filename)
 
 	if (infile) {
 		result << infile.rdbuf();
-		infile.close();
 	}
 
 	return result;
