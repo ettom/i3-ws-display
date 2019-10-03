@@ -98,7 +98,7 @@ void printDigit(int index, char number)
 
 void printNumber(String number)
 {
-	while (!(currentMillis - startMillis >= refresh_interval)) {
+	while (currentMillis - startMillis < refresh_interval) {
 		currentMillis = millis();
 
 		// left align the number on display
