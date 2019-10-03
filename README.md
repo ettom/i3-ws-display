@@ -96,7 +96,7 @@ using a systemd user service for starting and stopping `ws_display`. The systemd
 service starts `ws_display` as soon as the Arduino becomes available. The service
 also depends on a custom `i3.target` which gets started by i3:
 
-`exec_always --no-startup-id systemctl --user start i3.target`
+`exec_always --no-startup-id systemctl --user restart i3.target`
 
 I also put `systemctl --user stop i3.target` in a script that runs when i3 exits. See the
 `systemd/ws_display.service` and `systemd/i3.target` files.
