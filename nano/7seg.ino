@@ -1,6 +1,7 @@
 #include <Arduino.h>
 
 #define DISPLAY_LENGTH 4
+#define ALIGN_TO_RIGHT true
 
 #define WORKSPACES_SENT_DELIMITER 'w'
 #define FOCUSED_SENT_DELIMITER    'f'
@@ -101,12 +102,14 @@ void printNumber(String number)
 	while (currentMillis - startMillis < refresh_interval) {
 		currentMillis = millis();
 
-		// left align the number on display
-		int toAdd = number.length() - (DISPLAY_LENGTH + 1);
-		toAdd = abs(toAdd);
+		int positionShift = 1;
+		if (ALIGN_TO_RIGHT) {
+			positionShift = number.length() - (DISPLAY_LENGTH + 1);
+			positionShift = abs(positionShift);
+		}
 
 		for (size_t i = 0; i < number.length(); ++i) {
-			printDigit(i + toAdd, number[i]);
+			printDigit(i + positionShift, number[i]);
 		}
 	}
 
