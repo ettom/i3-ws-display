@@ -34,7 +34,7 @@ std::stringstream read_file(const std::string& filename)
 	std::stringstream result;
 	std::ifstream infile(filename);
 	if (!infile.is_open()) {
-		 throw std::runtime_error("Couldn't open config file!");
+		 throw std::runtime_error("Couldn't open config file at " + filename);
 	}
 
 	if (infile) {
