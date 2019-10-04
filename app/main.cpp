@@ -1,4 +1,5 @@
 #include <iostream>
+#include <stdexcept>
 #include <string>
 #include <algorithm>
 #include <unistd.h>
@@ -33,7 +34,7 @@ std::stringstream read_file(const std::string& filename)
 	std::stringstream result;
 	std::ifstream infile(filename);
 	if (!infile.is_open()) {
-		throw "Couldn't open config file!";
+		 throw std::runtime_error("Couldn't open config file!");
 	}
 
 	if (infile) {
@@ -51,7 +52,7 @@ Config parse_config_file(std::stringstream& contents)
 
 	if (!parseFromStream(builder, contents, &root, &errs)) {
 		std::cerr << errs << std::endl;
-		throw "Errors in config file!";
+		throw std::runtime_error("Errors in config file!");
 	}
 
 	Config config;
@@ -176,8 +177,8 @@ int main()
 	try {
 		std::stringstream file_contents = read_file(CONFIG_FILE);
 		config = parse_config_file(file_contents);
-	} catch (const char* e) {
-		std::cerr << e << std::endl;
+	} catch (const std::runtime_error& e) {
+		std::cerr << e.what() << std::endl;
 		return EXIT_FAILURE;
 	}
 
