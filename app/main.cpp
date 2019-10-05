@@ -12,11 +12,11 @@
 
 #define CONFIG_PATH_RELATIVE_TO_HOME  "/.config/"
 #define CONFIG_FILE                   "ws_display.json"
+#define STARTUP_DELAY_IN_MILLISECONDS 1500
 
 #define WORKSPACES_SENT_DELIMITER     "w"
 #define FOCUSED_SENT_DELIMITER        "f"
 #define FOCUSED_NOT_FOUND             "-"
-#define STARTUP_DELAY_IN_MILLISECONDS 1500
 
 using namespace LibSerial;
 
@@ -83,7 +83,7 @@ Config parse_config_file(std::stringstream& contents)
 	return config;
 }
 
-void send_to_arduino(State state)
+void send_to_arduino(const State& state)
 {
 	serial_port.Write(state.workspaces);
 	serial_port.Write(WORKSPACES_SENT_DELIMITER);
@@ -130,7 +130,8 @@ void move_workspace_10_to_end(std::string& workspaces)
 		workspaces.insert(workspaces.length(), "0");
 	}
 }
-void sort_workspace_string(State& state, Config config)
+
+void sort_workspace_string(State& state, const Config& config)
 {
 	std::sort(state.workspaces.begin(), state.workspaces.end());
 	move_workspace_10_to_end(state.workspaces);
@@ -148,7 +149,7 @@ std::string ensure_workspace_name_is_numeric(const std::string& workspace_name)
 	return "";
 }
 
-State find_workspaces(Config config)
+State find_workspaces(const Config& config)
 {
 	State state;
 	bool found_focused = false;
@@ -172,7 +173,7 @@ State find_workspaces(Config config)
 	return state;
 }
 
-void startup(State& state, Config config)
+void startup(State& state, const Config& config)
 {
 	// wait for a bit for the Arduino to restart
 	usleep(STARTUP_DELAY_IN_MILLISECONDS * 1000);
