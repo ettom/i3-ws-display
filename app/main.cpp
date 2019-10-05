@@ -10,7 +10,8 @@
 #include <i3ipc++/ipc.hpp>
 #include <json/json.h>
 
-#define CONFIG_PATH_RELATIVE_TO_HOME "/.config/ws_display.json"
+#define CONFIG_PATH_RELATIVE_TO_HOME  "/.config/"
+#define CONFIG_FILE                   "ws_display.json"
 
 #define WORKSPACES_SENT_DELIMITER     "w"
 #define FOCUSED_SENT_DELIMITER        "f"
@@ -29,12 +30,27 @@ struct Config {
 	size_t DISPLAY_LENGTH;
 };
 
+std::string get_config_path()
+{
+	std::string config_path;
+	auto xdg_config_home = std::getenv("XDG_CONFIG_HOME");
+	if (xdg_config_home) {
+		config_path = std::string(xdg_config_home) + '/';
+	} else {
+		config_path = std::string(std::getenv("HOME")) + CONFIG_PATH_RELATIVE_TO_HOME;
+	}
+
+	config_path += CONFIG_FILE;
+
+	return config_path;
+}
+
 std::stringstream read_file(const std::string& filename)
 {
 	std::stringstream result;
 	std::ifstream infile(filename);
 	if (!infile.is_open()) {
-		 throw std::runtime_error("Couldn't open config file at " + filename);
+		throw std::runtime_error("Couldn't open config file at " + filename);
 	}
 
 	if (infile) {
@@ -171,11 +187,11 @@ void loop(const std::string& workspaces)
 
 int main()
 {
-	const std::string CONFIG_FILE = static_cast<std::string>(std::getenv("HOME")) + CONFIG_PATH_RELATIVE_TO_HOME;
+	const std::string config_path = get_config_path();
 	Config config;
 
 	try {
-		std::stringstream file_contents = read_file(CONFIG_FILE);
+		std::stringstream file_contents = read_file(config_path);
 		config = parse_config_file(file_contents);
 	} catch (const std::runtime_error& e) {
 		std::cerr << e.what() << std::endl;
