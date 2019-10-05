@@ -22,12 +22,16 @@ using namespace LibSerial;
 
 SerialPort serial_port;
 i3ipc::connection conn;
-std::string focused;
 
 struct Config {
 	std::string SERIAL_PORT;
 	std::string OUTPUT;
 	size_t DISPLAY_LENGTH;
+};
+
+struct State {
+	std::string workspaces;
+	std::string focused;
 };
 
 std::string get_config_path()
@@ -79,11 +83,11 @@ Config parse_config_file(std::stringstream& contents)
 	return config;
 }
 
-void send_to_arduino(const std::string& workspaces)
+void send_to_arduino(State state)
 {
-	serial_port.Write(workspaces);
+	serial_port.Write(state.workspaces);
 	serial_port.Write(WORKSPACES_SENT_DELIMITER);
-	serial_port.Write(focused);
+	serial_port.Write(state.focused);
 	serial_port.Write(FOCUSED_SENT_DELIMITER);
 	serial_port.DrainWriteBuffer();
 }
@@ -105,17 +109,17 @@ void resize_string_to_size(std::string& input, size_t target_size)
 	}
 }
 
-void always_display_focused_workspace(std::string& workspaces, Config config)
+void always_display_focused_workspace(State& state, size_t display_length)
 {
-	if (focused == FOCUSED_NOT_FOUND) {
+	if (state.focused == FOCUSED_NOT_FOUND) {
 		return;
 	}
 
-	bool doesnt_fit_on_display = workspaces.length() > config.DISPLAY_LENGTH;
-	bool focused_workspace_not_displayed = workspaces.find(focused) > config.DISPLAY_LENGTH - 1;
+	bool doesnt_fit_on_display = state.workspaces.length() > display_length;
+	bool focused_workspace_not_displayed = state.workspaces.find(state.focused) > display_length - 1;
 	if (doesnt_fit_on_display && focused_workspace_not_displayed) {
-		workspaces.erase(workspaces.find(focused), 1);
-		workspaces.insert(config.DISPLAY_LENGTH - 1, focused);
+		state.workspaces.erase(state.workspaces.find(state.focused), 1);
+		state.workspaces.insert(display_length - 1, state.focused);
 	}
 }
 
@@ -126,12 +130,12 @@ void move_workspace_10_to_end(std::string& workspaces)
 		workspaces.insert(workspaces.length(), "0");
 	}
 }
-void sort_workspace_string(std::string& workspaces, Config config)
+void sort_workspace_string(State& state, Config config)
 {
-	std::sort(workspaces.begin(), workspaces.end());
-	move_workspace_10_to_end(workspaces);
-	always_display_focused_workspace(workspaces, config);
-	resize_string_to_size(workspaces, config.DISPLAY_LENGTH);
+	std::sort(state.workspaces.begin(), state.workspaces.end());
+	move_workspace_10_to_end(state.workspaces);
+	always_display_focused_workspace(state, config.DISPLAY_LENGTH);
+	resize_string_to_size(state.workspaces, config.DISPLAY_LENGTH);
 }
 
 std::string ensure_workspace_name_is_numeric(const std::string& workspace_name)
@@ -144,44 +148,44 @@ std::string ensure_workspace_name_is_numeric(const std::string& workspace_name)
 	return "";
 }
 
-std::string find_workspaces(Config config)
+State find_workspaces(Config config)
 {
-	std::string workspaces;
+	State state;
 	bool found_focused = false;
 	for (auto& workspace : conn.get_workspaces()) {
 		if (config.OUTPUT.empty() || workspace->output == config.OUTPUT) {
 			std::string workspace_number = ensure_workspace_name_is_numeric(workspace->name);
 			workspace_number = (workspace_number == "10") ? "0" : workspace_number;
 			if (workspace->focused) {
-				focused = workspace_number;
+				state.focused = workspace_number;
 				found_focused = true;
 			}
 
-			workspaces += workspace_number;
+			state.workspaces += workspace_number;
 		}
 	}
 
 	if (!found_focused) {
-		focused = FOCUSED_NOT_FOUND;
+		state.focused = FOCUSED_NOT_FOUND;
 	}
 
-	return workspaces;
+	return state;
 }
 
-void startup(std::string workspaces, Config config)
+void startup(State& state, Config config)
 {
 	// wait for a bit for the Arduino to restart
 	usleep(STARTUP_DELAY_IN_MILLISECONDS * 1000);
-	workspaces = find_workspaces(config);
-	sort_workspace_string(workspaces, config);
-	send_to_arduino(workspaces);
+	state = find_workspaces(config);
+	sort_workspace_string(state, config);
+	send_to_arduino(state);
 }
 
-void loop(const std::string& workspaces)
+void loop(State& state)
 {
 	while (true) {
 		conn.handle_event();
-		send_to_arduino(workspaces);
+		send_to_arduino(state);
 	}
 }
 
@@ -189,6 +193,7 @@ int main()
 {
 	const std::string config_path = get_config_path();
 	Config config;
+	State state;
 
 	try {
 		std::stringstream file_contents = read_file(config_path);
@@ -198,12 +203,11 @@ int main()
 		return EXIT_FAILURE;
 	}
 
-	std::string workspaces;
 	conn.subscribe(i3ipc::ET_WORKSPACE);
 
 	conn.signal_workspace_event.connect([&](__attribute__((unused)) const i3ipc::workspace_event_t&) {
-		workspaces = find_workspaces(config);
-		sort_workspace_string(workspaces, config);
+		state = find_workspaces(config);
+		sort_workspace_string(state, config);
 	});
 
 
@@ -217,8 +221,8 @@ int main()
 	initialize_serial();
 
 	try {
-		startup(workspaces, config);
-		loop(workspaces);
+		startup(state, config);
+		loop(state);
 	} catch (const std::runtime_error&) {
 		serial_port.Close();
 		return EXIT_FAILURE;
