@@ -57,9 +57,7 @@ std::stringstream read_file(const std::string& filename)
 		throw std::runtime_error("Couldn't open config file at " + filename);
 	}
 
-	if (infile) {
-		result << infile.rdbuf();
-	}
+	result << infile.rdbuf();
 
 	return result;
 }
