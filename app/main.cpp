@@ -69,8 +69,7 @@ Config parse_config_file(std::stringstream& contents)
 	JSONCPP_STRING errs;
 
 	if (!parseFromStream(builder, contents, &root, &errs)) {
-		std::cerr << errs << std::endl;
-		throw std::runtime_error("Errors in config file!");
+		throw std::runtime_error("Errors in config file:\n" + errs);
 	}
 
 	Config config;
