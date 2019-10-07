@@ -1,0 +1,5 @@
+{
+    "output" : "",
+    "display_length" : 4,
+    "serial_port" : "/dev/ws_display_link"
+}
