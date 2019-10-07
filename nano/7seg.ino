@@ -151,7 +151,6 @@ void setup() // {{{1
 void loop()
 {
 	while (Serial.available() > 0) {
-		Serial.println("r");
 		char inChar = Serial.read();
 
 		if (inputString.length() < DISPLAY_LENGTH + 1 && isDigit(inChar)) {
