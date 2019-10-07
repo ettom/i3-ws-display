@@ -74,7 +74,7 @@ sudo make install
 
 
 ### Configuration
-Configure `~/.config/ws_display.json` to match your setup.
+Copy `ws_display.json` to `~/.config` or to `$XDG_CONFIG_HOME`. Modify it to match your setup.
 * `output` -  If you want the 7-segment display to show workspaces only for a
   specific output, set it here. The name of the output should be the same as is shown by
   `xrandr`.
