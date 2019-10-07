@@ -1,5 +1,5 @@
 # i3-ws-display
-Display active i3 workspaces on a 7-segment display
+Display active [i3](https://i3wm.org/) workspaces on a 7-segment display
 
 A set of programs and configuration files for displaying i3 workspaces on a display
 controlled by an Arduino Nano.
