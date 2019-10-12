@@ -15,8 +15,8 @@
 #define STARTUP_DELAY_IN_MILLISECONDS 1500
 
 #define WORKSPACES_SENT_DELIMITER     "w"
-#define FOCUSED_SENT_DELIMITER        "f"
-#define FOCUSED_NOT_FOUND             "-"
+#define VISIBLE_SENT_DELIMITER        "f"
+#define VISIBLE_NOT_FOUND             "-"
 
 using namespace LibSerial;
 
@@ -31,7 +31,7 @@ struct Config {
 
 struct State {
 	std::string workspaces;
-	std::string focused;
+	std::string visible;
 };
 
 std::string get_config_path()
@@ -84,8 +84,8 @@ void send_to_arduino(const State& state)
 {
 	serial_port.Write(state.workspaces);
 	serial_port.Write(WORKSPACES_SENT_DELIMITER);
-	serial_port.Write(state.focused);
-	serial_port.Write(FOCUSED_SENT_DELIMITER);
+	serial_port.Write(state.visible);
+	serial_port.Write(VISIBLE_SENT_DELIMITER);
 	serial_port.DrainWriteBuffer();
 }
 
@@ -106,17 +106,17 @@ void resize_string_to_size(std::string& input, size_t target_size)
 	}
 }
 
-void always_display_focused_workspace(State& state, size_t display_length)
+void always_display_visible_workspace(State& state, size_t display_length)
 {
-	if (state.focused == FOCUSED_NOT_FOUND) {
+	if (state.visible == VISIBLE_NOT_FOUND) {
 		return;
 	}
 
 	bool doesnt_fit_on_display = state.workspaces.length() > display_length;
-	bool focused_workspace_not_displayed = state.workspaces.find(state.focused) > display_length - 1;
-	if (doesnt_fit_on_display && focused_workspace_not_displayed) {
-		state.workspaces.erase(state.workspaces.find(state.focused), 1);
-		state.workspaces.insert(display_length - 1, state.focused);
+	bool visible_workspace_not_displayed = state.workspaces.find(state.visible) > display_length - 1;
+	if (doesnt_fit_on_display && visible_workspace_not_displayed) {
+		state.workspaces.erase(state.workspaces.find(state.visible), 1);
+		state.workspaces.insert(display_length - 1, state.visible);
 	}
 }
 
@@ -132,7 +132,7 @@ void sort_workspace_string(State& state, const Config& config)
 {
 	std::sort(state.workspaces.begin(), state.workspaces.end());
 	move_workspace_10_to_end(state.workspaces);
-	always_display_focused_workspace(state, config.DISPLAY_LENGTH);
+	always_display_visible_workspace(state, config.DISPLAY_LENGTH);
 	resize_string_to_size(state.workspaces, config.DISPLAY_LENGTH);
 }
 
@@ -149,22 +149,22 @@ std::string ensure_workspace_name_is_numeric(const std::string& workspace_name)
 State find_workspaces(const Config& config)
 {
 	State state;
-	bool found_focused = false;
+	bool found_visible = false;
 	for (auto& workspace : conn.get_workspaces()) {
 		if (config.OUTPUT.empty() || workspace->output == config.OUTPUT) {
 			std::string workspace_number = ensure_workspace_name_is_numeric(workspace->name);
 			workspace_number = (workspace_number == "10") ? "0" : workspace_number;
-			if (workspace->focused) {
-				state.focused = workspace_number;
-				found_focused = true;
+			if (workspace->visible) {
+				state.visible = workspace_number;
+				found_visible = true;
 			}
 
 			state.workspaces += workspace_number;
 		}
 	}
 
-	if (!found_focused) {
-		state.focused = FOCUSED_NOT_FOUND;
+	if (!found_visible) {
+		state.visible = VISIBLE_NOT_FOUND;
 	}
 
 	return state;

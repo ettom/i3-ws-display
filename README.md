@@ -7,9 +7,9 @@ controlled by an Arduino Nano.
 ## Background
 I started using a secondary monitor and I didn't want to waste screen real estate for
 a status bar on it. However, peeking at the other monitor to see which workspaces
-are active and focused felt awkward. This led me to create this project. The end
+are active felt awkward. This led me to create this project. The end
 result is a 4-digit 7-segment display that shows the active workspaces, mounted on
-top of my external monitor. It also shows if a workspace is focused by lighting up
+top of my external monitor. It also shows if a workspace is visible by lighting up
 the dot after the corresponding workspace number.
 
 There is no real reason to be limited to a 4-digit display, or in fact - a 7-segment
@@ -22,7 +22,7 @@ well for me.
  the pin mappings/use a library for the 7-segment display.
 * 7-segment display module. Mine is labelled HS420561K-32. It's a 4-digit
  common-cathode unit. It's important that there is a dot after every digit so you
-  can indicate the currently focused workspace.
+  can indicate the currently visible workspace.
 * Four 220-ohm resistors and wires to connect it all up
 
 #### Setup

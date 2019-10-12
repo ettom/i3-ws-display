@@ -4,13 +4,13 @@
 #define ALIGN_TO_RIGHT true
 
 #define WORKSPACES_SENT_DELIMITER 'w'
-#define FOCUSED_SENT_DELIMITER    'f'
-#define FOCUSED_NOT_FOUND         '-'
+#define VISIBLE_SENT_DELIMITER    'f'
+#define VISIBLE_NOT_FOUND         '-'
 
 String inputString = "";
 String toPrint = "8888";
 
-char focusedWorkspace = FOCUSED_NOT_FOUND;
+char visibleWorkspace = VISIBLE_NOT_FOUND;
 
 unsigned long startMillis;
 unsigned long currentMillis;
@@ -80,9 +80,9 @@ void lightDigit(int index)
 	}
 }
 
-void lightDotIfFocused(char number)
+void lightDotIfVisible(char number)
 {
-	if (number == focusedWorkspace) {
+	if (number == visibleWorkspace) {
 		PORTC = PORTC | (1 << 1);
 	} else {
 		PORTC = PORTC & (1 << 0);
@@ -93,7 +93,7 @@ void printDigit(int index, char number)
 {
 	lightSegments(number);
 	lightDigit(index);
-	lightDotIfFocused(number);
+	lightDotIfVisible(number);
 	delay(5);
 }
 
@@ -158,8 +158,8 @@ void loop()
 		} else if (inChar == WORKSPACES_SENT_DELIMITER) {
 			toPrint = inputString;
 			inputString = "";
-		} else if (inChar == FOCUSED_SENT_DELIMITER) {
-			focusedWorkspace = inputString[0];
+		} else if (inChar == VISIBLE_SENT_DELIMITER) {
+			visibleWorkspace = inputString[0];
 			inputString = "";
 		}
 	}
