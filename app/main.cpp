@@ -212,7 +212,7 @@ int main()
 	try {
 		serial_port.Open(config.SERIAL_PORT);
 	} catch (const OpenFailed&) {
-		std::cerr << "The serial ports did not open correctly." << std::endl;
+		std::cerr << "The serial port " << config.SERIAL_PORT << " did not open correctly." << std::endl;
 		return EXIT_FAILURE;
 	}
 
