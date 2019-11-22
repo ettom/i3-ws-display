@@ -24,9 +24,9 @@ SerialPort serial_port;
 i3ipc::connection conn;
 
 struct Config {
-	std::string SERIAL_PORT;
-	std::string OUTPUT;
-	size_t DISPLAY_LENGTH;
+	std::string target_serial_port;
+	std::string output;
+	size_t display_length;
 };
 
 struct State {
@@ -73,9 +73,9 @@ Config parse_config_file(std::stringstream& contents)
 	}
 
 	Config config;
-	config.OUTPUT = root["output"].asString();
-	config.SERIAL_PORT = root["serial_port"].asString();
-	config.DISPLAY_LENGTH = root["display_length"].asUInt();
+	config.output = root["output"].asString();
+	config.target_serial_port = root["serial_port"].asString();
+	config.display_length = root["display_length"].asUInt();
 
 	return config;
 }
@@ -132,8 +132,8 @@ void sort_workspace_string(State& state, const Config& config)
 {
 	std::sort(state.workspaces.begin(), state.workspaces.end());
 	move_workspace_10_to_end(state.workspaces);
-	always_display_visible_workspace(state, config.DISPLAY_LENGTH);
-	resize_string_to_size(state.workspaces, config.DISPLAY_LENGTH);
+	always_display_visible_workspace(state, config.display_length);
+	resize_string_to_size(state.workspaces, config.display_length);
 }
 
 std::string ensure_workspace_name_is_numeric(const std::string& workspace_name)
@@ -151,7 +151,7 @@ State find_workspaces(const Config& config)
 	State state;
 	bool found_visible = false;
 	for (auto& workspace : conn.get_workspaces()) {
-		if (config.OUTPUT.empty() || workspace->output == config.OUTPUT) {
+		if (config.output.empty() || workspace->output == config.output) {
 			std::string workspace_number = ensure_workspace_name_is_numeric(workspace->name);
 			workspace_number = (workspace_number == "10") ? "0" : workspace_number;
 			if (workspace->visible) {
@@ -210,9 +210,9 @@ int main()
 
 
 	try {
-		serial_port.Open(config.SERIAL_PORT);
+		serial_port.Open(config.target_serial_port);
 	} catch (const OpenFailed&) {
-		std::cerr << "The serial port " << config.SERIAL_PORT << " did not open correctly." << std::endl;
+		std::cerr << "The serial port " << config.target_serial_port << " did not open correctly." << std::endl;
 		return EXIT_FAILURE;
 	}
 
