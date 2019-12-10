@@ -14,6 +14,6 @@ target_link_libraries(${PROJECT_NAME} serial)
 
 target_compile_options(
     ${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic -Wconversion
-                            -Wsign-conversion -Wshadow)
+    -Wsign-conversion -Wshadow)
 
 install(TARGETS ${PROJECT_NAME})
