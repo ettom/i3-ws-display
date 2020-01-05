@@ -4,8 +4,8 @@
 #define ALIGN_TO_RIGHT true
 
 #define WORKSPACES_SENT_DELIMITER 'w'
-#define VISIBLE_SENT_DELIMITER    'f'
-#define VISIBLE_NOT_FOUND         '-'
+#define VISIBLE_SENT_DELIMITER	  'f'
+#define VISIBLE_NOT_FOUND	  '-'
 
 String inputString = "";
 String toPrint = "8888";

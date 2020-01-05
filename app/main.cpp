@@ -1,22 +1,22 @@
+#include <algorithm>
+#include <fstream>
 #include <iostream>
+#include <sstream>
 #include <stdexcept>
 #include <string>
-#include <algorithm>
 #include <unistd.h>
-#include <fstream>
-#include <sstream>
 
-#include <libserial/SerialPort.h>
 #include <i3ipc++/ipc.hpp>
 #include <json/json.h>
+#include <libserial/SerialPort.h>
 
 #define CONFIG_PATH_RELATIVE_TO_HOME  "/.config/"
-#define CONFIG_FILE                   "ws_display.json"
+#define CONFIG_FILE		      "ws_display.json"
 #define STARTUP_DELAY_IN_MILLISECONDS 1500
 
-#define WORKSPACES_SENT_DELIMITER     "w"
-#define VISIBLE_SENT_DELIMITER        "f"
-#define VISIBLE_NOT_FOUND             "-"
+#define WORKSPACES_SENT_DELIMITER "w"
+#define VISIBLE_SENT_DELIMITER	  "f"
+#define VISIBLE_NOT_FOUND	  "-"
 
 using namespace LibSerial;
 
@@ -97,7 +97,6 @@ void initialize_serial()
 	serial_port.SetParity(Parity::PARITY_NONE);
 	serial_port.SetStopBits(StopBits::STOP_BITS_1);
 }
-
 
 void resize_string_to_size(std::string& input, size_t target_size)
 {
@@ -207,7 +206,6 @@ int main()
 		state = find_workspaces(config);
 		sort_workspace_string(state, config);
 	});
-
 
 	try {
 		serial_port.Open(config.target_serial_port);
