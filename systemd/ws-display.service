@@ -1,0 +1,14 @@
+[Unit]
+BindsTo=dev-wsdisplay.device
+Requisite=i3.target
+After=dev-wsdisplay.device i3.target
+Description=ws-display service
+
+[Service]
+Restart=no
+EnvironmentFile=/etc/environment
+ExecStart=/usr/local/bin/ws-display
+StandardError=null
+
+[Install]
+WantedBy=dev-wsdisplay.device i3.target

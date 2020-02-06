@@ -1,0 +1,1 @@
+SUBSYSTEM=="tty", KERNELS=="1-1.5.2.1", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="7523", SYMLINK+="wsdisplay", TAG+="systemd", ENV{SYSTEMD_WANTS}+="ws-display.service"

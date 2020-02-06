@@ -11,7 +11,7 @@
 #include <libserial/SerialPort.h>
 
 #define CONFIG_PATH_RELATIVE_TO_HOME  "/.config/"
-#define CONFIG_FILE		      "ws_display.json"
+#define CONFIG_FILE		      "ws-display.json"
 #define STARTUP_DELAY_IN_MILLISECONDS 1500
 
 #define WORKSPACES_SENT_DELIMITER "w"
