@@ -139,6 +139,11 @@ std::string ensure_workspace_name_is_numeric(const std::string& workspace_name)
 		return workspace_name.substr(n, (m == std::string::npos) ? m : m - n);
 	}
 	return "";
+
+std::string prepare_workspace_name(const std::string& workspace_name)
+{
+	std::string result = ensure_workspace_name_is_numeric(workspace_name);
+	return (result == "10") ? "0" : result;
 }
 
 State find_workspaces(const Config& config)
@@ -146,16 +151,17 @@ State find_workspaces(const Config& config)
 	State state;
 	bool found_visible = false;
 	for (auto& workspace : conn.get_workspaces()) {
-		if (config.output.empty() || workspace->output == config.output) {
-			std::string workspace_number = ensure_workspace_name_is_numeric(workspace->name);
-			workspace_number = (workspace_number == "10") ? "0" : workspace_number;
-			if (workspace->visible) {
-				state.visible = workspace_number.at(0);
-				found_visible = true;
-			}
-
-			state.workspaces += workspace_number;
+		if (!config.output.empty() && workspace->output != config.output) {
+			continue;
 		}
+
+		std::string workspace_number = prepare_workspace_name(workspace->name);
+		if (workspace->visible) {
+			state.visible = workspace_number.at(0);
+			found_visible = true;
+		}
+
+		state.workspaces += workspace_number;
 	}
 
 	if (!found_visible) {
