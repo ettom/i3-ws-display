@@ -39,7 +39,7 @@ std::string get_config_path()
 {
 	std::string config_path;
 	auto xdg_config_home = std::getenv("XDG_CONFIG_HOME");
-	if (xdg_config_home) {
+	if (xdg_config_home != NULL) {
 		config_path = std::string(xdg_config_home) + '/';
 	} else {
 		config_path = std::string(std::getenv("HOME")) + defaults::config_path_relative_to_home;
@@ -67,7 +67,7 @@ Config parse_config_file(std::stringstream& contents)
 {
 	Json::Value root;
 	Json::CharReaderBuilder builder;
-	JSONCPP_STRING errs;
+	Json::String errs;
 
 	if (!parseFromStream(builder, contents, &root, &errs)) {
 		throw std::runtime_error("Errors in config file:\n" + errs);
@@ -111,7 +111,7 @@ void always_display_visible_workspace(State& state, size_t display_length)
 
 void move_workspace_10_to_end(std::string& workspaces)
 {
-	if (workspaces.size() && workspaces.at(0) == '0') {
+	if (workspaces.length() > 0 && workspaces.at(0) == '0') {
 		workspaces.erase(0, 1);
 		workspaces.insert(workspaces.length(), "0");
 	}
