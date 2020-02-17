@@ -134,11 +134,13 @@ void prepare_workspace_string(State& state, const Config& config)
 std::string ensure_workspace_name_is_numeric(const std::string& workspace_name)
 {
 	auto const n = workspace_name.find_first_of("0123456789");
-	if (n != std::string::npos) {
-		size_t const m = workspace_name.find_first_not_of("0123456789", n);
-		return workspace_name.substr(n, (m == std::string::npos) ? m : m - n);
+	if (n == std::string::npos) {
+		throw std::logic_error("Workspace names must contain at least one numeric character!");
 	}
-	return "";
+
+	size_t const m = workspace_name.find_first_not_of("0123456789", n);
+	return workspace_name.substr(n, (m == std::string::npos) ? m : m - n);
+}
 
 std::string prepare_workspace_name(const std::string& workspace_name)
 {
