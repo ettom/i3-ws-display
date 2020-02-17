@@ -10,11 +10,14 @@
 #include <json/json.h>
 #include <libserial/SerialPort.h>
 
-#define CONFIG_PATH_RELATIVE_TO_HOME  "/.config/"
-#define CONFIG_FILE		      "ws-display.json"
-#define STARTUP_DELAY_IN_MILLISECONDS 1500
 #include "serial-commands.h"
 
+namespace defaults
+{
+const int startup_delay_ms {1500};
+const std::string config_file {"ws-display.json"};
+const std::string config_path_relative_to_home {"/.config/"};
+}
 
 using namespace LibSerial;
 
@@ -39,10 +42,10 @@ std::string get_config_path()
 	if (xdg_config_home) {
 		config_path = std::string(xdg_config_home) + '/';
 	} else {
-		config_path = std::string(std::getenv("HOME")) + CONFIG_PATH_RELATIVE_TO_HOME;
+		config_path = std::string(std::getenv("HOME")) + defaults::config_path_relative_to_home;
 	}
 
-	config_path += CONFIG_FILE;
+	config_path += defaults::config_file;
 
 	return config_path;
 }
@@ -165,7 +168,7 @@ State find_workspaces(const Config& config)
 void startup(State& state, const Config& config)
 {
 	// wait for a bit for the Arduino to restart
-	usleep(STARTUP_DELAY_IN_MILLISECONDS * 1000);
+	usleep(defaults::startup_delay_ms * 1000);
 	state = find_workspaces(config);
 	prepare_workspace_string(state, config);
 	send_to_arduino(state);
