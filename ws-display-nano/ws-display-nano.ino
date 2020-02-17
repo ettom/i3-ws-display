@@ -1,10 +1,9 @@
+#include "serial-commands.h"
+
 #include <Arduino.h>
 
 #define DISPLAY_LENGTH 4
 #define ALIGN_TO_RIGHT true
-
-#define WORKSPACES_SENT_DELIMITER 'w'
-#define VISIBLE_SENT_DELIMITER	  'f'
 
 #define SEG_A  0x80
 #define SEG_B  0x40
@@ -90,6 +89,12 @@ void printNumber(String number)
 	startMillis = currentMillis;
 }
 
+bool isValidCmd(char c)
+{
+	return isDigit(c) || (c == serial_commands::workspaces_sent) || (c == serial_commands::visible_sent)
+	       || (c == serial_commands::visible_not_found);
+}
+
 void setup() // {{{1
 {
 	/*
@@ -121,19 +126,22 @@ void loop()
 {
 	while (Serial.available() > 0) {
 		char inChar = Serial.read();
+		if (!isValidCmd(inChar)) {
+			continue;
+		}
 
-		if (inputString.length() <= DISPLAY_LENGTH && isDigit(inChar)) {
-			inputString += inChar;
-		} else if (inChar == WORKSPACES_SENT_DELIMITER) {
+		if (inChar == serial_commands::workspaces_sent) {
 			toPrint = inputString;
 			inputString = "";
-		} else if (inChar == VISIBLE_SENT_DELIMITER) {
-			visibleWorkspace = inputString[0] - '0';
+		} else if (inChar == serial_commands::visible_sent) {
+			char last = inputString[0];
+			visibleWorkspace = (last == serial_commands::visible_not_found) ? -1 : last - '0';
 			inputString = "";
+		} else {
+			inputString += inChar;
 		}
 	}
 
 	printNumber(toPrint);
 }
-
 // vim:fdm=marker:fmr={{{,}}}

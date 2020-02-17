@@ -13,10 +13,8 @@
 #define CONFIG_PATH_RELATIVE_TO_HOME  "/.config/"
 #define CONFIG_FILE		      "ws-display.json"
 #define STARTUP_DELAY_IN_MILLISECONDS 1500
+#include "serial-commands.h"
 
-#define WORKSPACES_SENT_DELIMITER "w"
-#define VISIBLE_SENT_DELIMITER	  "f"
-#define VISIBLE_NOT_FOUND	  "-"
 
 using namespace LibSerial;
 
@@ -31,7 +29,7 @@ struct Config {
 
 struct State {
 	std::string workspaces;
-	std::string visible;
+	char visible;
 };
 
 std::string get_config_path()
@@ -83,9 +81,9 @@ Config parse_config_file(std::stringstream& contents)
 void send_to_arduino(const State& state)
 {
 	serial_port.Write(state.workspaces);
-	serial_port.Write(WORKSPACES_SENT_DELIMITER);
-	serial_port.Write(state.visible);
-	serial_port.Write(VISIBLE_SENT_DELIMITER);
+	serial_port.WriteByte(serial_commands::workspaces_sent);
+	serial_port.WriteByte(state.visible);
+	serial_port.WriteByte(serial_commands::visible_sent);
 	serial_port.DrainWriteBuffer();
 }
 
@@ -107,15 +105,11 @@ void resize_string_to_size(std::string& input, size_t target_size)
 
 void always_display_visible_workspace(State& state, size_t display_length)
 {
-	if (state.visible == VISIBLE_NOT_FOUND) {
-		return;
-	}
-
 	bool doesnt_fit_on_display = state.workspaces.length() > display_length;
 	bool visible_workspace_not_displayed = state.workspaces.find(state.visible) > display_length - 1;
 	if (doesnt_fit_on_display && visible_workspace_not_displayed) {
 		state.workspaces.erase(state.workspaces.find(state.visible), 1);
-		state.workspaces.insert(display_length - 1, state.visible);
+		state.workspaces.insert(display_length - 1, 1, state.visible);
 	}
 }
 
@@ -131,8 +125,11 @@ void sort_workspace_string(State& state, const Config& config)
 {
 	std::sort(state.workspaces.begin(), state.workspaces.end());
 	move_workspace_10_to_end(state.workspaces);
-	always_display_visible_workspace(state, config.display_length);
 	resize_string_to_size(state.workspaces, config.display_length);
+	if (state.visible != serial_commands::visible_not_found) {
+		always_display_visible_workspace(state, config.display_length);
+	}
+
 }
 
 std::string ensure_workspace_name_is_numeric(const std::string& workspace_name)
@@ -154,7 +151,7 @@ State find_workspaces(const Config& config)
 			std::string workspace_number = ensure_workspace_name_is_numeric(workspace->name);
 			workspace_number = (workspace_number == "10") ? "0" : workspace_number;
 			if (workspace->visible) {
-				state.visible = workspace_number;
+				state.visible = workspace_number.at(0);
 				found_visible = true;
 			}
 
@@ -163,7 +160,7 @@ State find_workspaces(const Config& config)
 	}
 
 	if (!found_visible) {
-		state.visible = VISIBLE_NOT_FOUND;
+		state.visible = serial_commands::visible_not_found;
 	}
 
 	return state;
