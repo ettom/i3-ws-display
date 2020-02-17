@@ -38,7 +38,7 @@ struct State {
 std::string get_config_path()
 {
 	std::string config_path;
-	auto xdg_config_home = std::getenv("XDG_CONFIG_HOME");
+	const auto xdg_config_home = std::getenv("XDG_CONFIG_HOME");
 	if (xdg_config_home != NULL) {
 		config_path = std::string(xdg_config_home) + '/';
 	} else {
@@ -133,18 +133,18 @@ void prepare_workspace_string(State& state, const Config& config)
 
 std::string ensure_workspace_name_is_numeric(const std::string& workspace_name)
 {
-	auto const n = workspace_name.find_first_of("0123456789");
+	const size_t n = workspace_name.find_first_of("0123456789");
 	if (n == std::string::npos) {
 		throw std::logic_error("Workspace names must contain at least one numeric character!");
 	}
 
-	size_t const m = workspace_name.find_first_not_of("0123456789", n);
+	const size_t m = workspace_name.find_first_not_of("0123456789", n);
 	return workspace_name.substr(n, (m == std::string::npos) ? m : m - n);
 }
 
 std::string prepare_workspace_name(const std::string& workspace_name)
 {
-	std::string result = ensure_workspace_name_is_numeric(workspace_name);
+	const std::string result = ensure_workspace_name_is_numeric(workspace_name);
 	return (result == "10") ? "0" : result;
 }
 
@@ -152,12 +152,12 @@ State find_workspaces(const Config& config)
 {
 	State state;
 	bool found_visible = false;
-	for (auto& workspace : conn.get_workspaces()) {
+	for (const auto& workspace : conn.get_workspaces()) {
 		if (!config.output.empty() && workspace->output != config.output) {
 			continue;
 		}
 
-		std::string workspace_number = prepare_workspace_name(workspace->name);
+		const std::string workspace_number = prepare_workspace_name(workspace->name);
 		if (workspace->visible) {
 			state.visible = workspace_number.at(0);
 			found_visible = true;
