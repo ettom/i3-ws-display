@@ -96,13 +96,6 @@ void initialize_serial()
 	serial_port.SetStopBits(StopBits::STOP_BITS_1);
 }
 
-void resize_string_to_size(std::string& input, size_t target_size)
-{
-	if (input.size() > target_size) {
-		input.resize(target_size);
-	}
-}
-
 void always_display_visible_workspace(State& state, size_t display_length)
 {
 	bool doesnt_fit_on_display = state.workspaces.length() > display_length;
@@ -121,15 +114,18 @@ void move_workspace_10_to_end(std::string& workspaces)
 	}
 }
 
-void sort_workspace_string(State& state, const Config& config)
+void prepare_workspace_string(State& state, const Config& config)
 {
 	std::sort(state.workspaces.begin(), state.workspaces.end());
 	move_workspace_10_to_end(state.workspaces);
-	resize_string_to_size(state.workspaces, config.display_length);
+
 	if (state.visible != serial_commands::visible_not_found) {
 		always_display_visible_workspace(state, config.display_length);
 	}
 
+	if (state.workspaces.size() > config.display_length) {
+		state.workspaces.resize(config.display_length);
+	}
 }
 
 std::string ensure_workspace_name_is_numeric(const std::string& workspace_name)
@@ -171,7 +167,7 @@ void startup(State& state, const Config& config)
 	// wait for a bit for the Arduino to restart
 	usleep(STARTUP_DELAY_IN_MILLISECONDS * 1000);
 	state = find_workspaces(config);
-	sort_workspace_string(state, config);
+	prepare_workspace_string(state, config);
 	send_to_arduino(state);
 }
 
@@ -201,7 +197,7 @@ int main()
 
 	conn.signal_workspace_event.connect([&](__attribute__((unused)) const i3ipc::workspace_event_t&) {
 		state = find_workspaces(config);
-		sort_workspace_string(state, config);
+		prepare_workspace_string(state, config);
 	});
 
 	try {
