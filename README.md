@@ -51,16 +51,6 @@ sigc++
 This project also uses the [i3ipcpp](https://github.com/drmgc/i3ipcpp) library
 which is pulled and built automatically by cmake.
 
-##### Installing the dependencies for Ubuntu 18.04
-Get the latest version of [cmake](https://apt.kitware.com/).<br>
-Then run the following command:
-
-`sudo apt install pkgconf g++ libjsoncpp-dev libsigc++-2.0-dev libserial-dev`
-
-Installing `libserial-dev` might give you a linker error, the
-solution is to uninstall it and build [libserial](https://github.com/crayzeewulf/libserial) from
-source.
-
 ### Building
 Run the following commands:
 ```
