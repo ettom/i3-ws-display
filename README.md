@@ -34,7 +34,8 @@ to the [typical segment identification](https://commons.wikimedia.org/wiki/File:
 **Top row** - 1, a, f, 2, 3, b <br>
 **Bottom row** - e, d, DP, c, g, 4
 
-![Fritzing schematic](https://github.com/ettom/i3-ws-display/blob/master/nano/fritzing.png)
+![Fritzing
+schematic](https://github.com/ettom/i3-ws-display/blob/master/ws-display-nano/fritzing.png)
 
 
 ## Software setup
