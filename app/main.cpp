@@ -83,10 +83,10 @@ Config parse_config_file(std::stringstream& contents)
 
 void send_to_arduino(const State& state)
 {
-	serial_port.Write(state.workspaces);
-	serial_port.WriteByte(serial_commands::workspaces_sent);
-	serial_port.WriteByte(state.visible);
-	serial_port.WriteByte(serial_commands::visible_sent);
+	std::string payload {state.workspaces + serial_commands::workspaces_sent + state.visible
+			     + serial_commands::visible_sent};
+
+	serial_port.Write(payload);
 	serial_port.DrainWriteBuffer();
 }
 
