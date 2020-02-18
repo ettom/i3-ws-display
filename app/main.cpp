@@ -1,3 +1,5 @@
+#include "serial-commands.h"
+
 #include <algorithm>
 #include <fstream>
 #include <iostream>
@@ -10,19 +12,12 @@
 #include <json/json.h>
 #include <libserial/SerialPort.h>
 
-#include "serial-commands.h"
-
 namespace defaults
 {
 const int startup_delay_ms {1500};
 const std::string config_file {"ws-display.json"};
 const std::string config_path_relative_to_home {"/.config/"};
 }
-
-using namespace LibSerial;
-
-SerialPort serial_port;
-i3ipc::connection conn;
 
 struct Config {
 	std::string target_serial_port;
@@ -35,11 +30,15 @@ struct State {
 	char visible;
 };
 
+using namespace LibSerial;
+SerialPort serial_port;
+i3ipc::connection conn;
+
 std::string get_config_path()
 {
 	std::string config_path;
 	const auto xdg_config_home = std::getenv("XDG_CONFIG_HOME");
-	if (xdg_config_home != NULL) {
+	if (xdg_config_home != nullptr) {
 		config_path = std::string(xdg_config_home) + '/';
 	} else {
 		config_path = std::string(std::getenv("HOME")) + defaults::config_path_relative_to_home;
@@ -99,7 +98,7 @@ void initialize_serial()
 	serial_port.SetStopBits(StopBits::STOP_BITS_1);
 }
 
-void always_display_visible_workspace(State& state, size_t display_length)
+void ensure_visible_workspace_displayed(State& state, size_t display_length)
 {
 	bool doesnt_fit_on_display = state.workspaces.length() > display_length;
 	bool visible_workspace_not_displayed = state.workspaces.find(state.visible) > display_length - 1;
@@ -109,7 +108,7 @@ void always_display_visible_workspace(State& state, size_t display_length)
 	}
 }
 
-void move_workspace_10_to_end(std::string& workspaces)
+void move_0_to_end(std::string& workspaces)
 {
 	if (workspaces.length() > 0 && workspaces.at(0) == '0') {
 		workspaces.erase(0, 1);
@@ -117,13 +116,13 @@ void move_workspace_10_to_end(std::string& workspaces)
 	}
 }
 
-void prepare_workspace_string(State& state, const Config& config)
+void prepare_workspaces(State& state, const Config& config)
 {
 	std::sort(state.workspaces.begin(), state.workspaces.end());
-	move_workspace_10_to_end(state.workspaces);
+	move_0_to_end(state.workspaces);
 
 	if (state.visible != serial_commands::visible_not_found) {
-		always_display_visible_workspace(state, config.display_length);
+		ensure_visible_workspace_displayed(state, config.display_length);
 	}
 
 	if (state.workspaces.size() > config.display_length) {
@@ -133,68 +132,53 @@ void prepare_workspace_string(State& state, const Config& config)
 
 std::string ensure_workspace_name_is_numeric(const std::string& workspace_name)
 {
-	const size_t n = workspace_name.find_first_of("0123456789");
+	const size_t n {workspace_name.find_first_of("0123456789")};
 	if (n == std::string::npos) {
 		throw std::logic_error("Workspace names must contain at least one numeric character!");
 	}
 
-	const size_t m = workspace_name.find_first_not_of("0123456789", n);
+	const size_t m {workspace_name.find_first_not_of("0123456789", n)};
 	return workspace_name.substr(n, (m == std::string::npos) ? m : m - n);
 }
 
-std::string prepare_workspace_name(const std::string& workspace_name)
+char prepare_workspace_name(const std::string& workspace_name)
 {
 	const std::string result = ensure_workspace_name_is_numeric(workspace_name);
-	return (result == "10") ? "0" : result;
+	return (result == "10") ? '0' : result.at(0);
 }
 
 State find_workspaces(const Config& config)
 {
-	State state;
-	bool found_visible = false;
+	State state {};
+	state.visible = serial_commands::visible_not_found;
+
 	for (const auto& workspace : conn.get_workspaces()) {
 		if (!config.output.empty() && workspace->output != config.output) {
 			continue;
 		}
 
-		const std::string workspace_number = prepare_workspace_name(workspace->name);
+		const char workspace_number = prepare_workspace_name(workspace->name);
 		if (workspace->visible) {
-			state.visible = workspace_number.at(0);
-			found_visible = true;
+			state.visible = workspace_number;
 		}
 
 		state.workspaces += workspace_number;
 	}
 
-	if (!found_visible) {
-		state.visible = serial_commands::visible_not_found;
-	}
-
 	return state;
 }
 
-void startup(State& state, const Config& config)
+void update_display(const Config& config)
 {
-	// wait for a bit for the Arduino to restart
-	usleep(defaults::startup_delay_ms * 1000);
-	state = find_workspaces(config);
-	prepare_workspace_string(state, config);
+	State state {find_workspaces(config)};
+	prepare_workspaces(state, config);
 	send_to_arduino(state);
-}
-
-void loop(State& state)
-{
-	while (true) {
-		conn.handle_event();
-		send_to_arduino(state);
-	}
 }
 
 int main()
 {
 	const std::string config_path = get_config_path();
 	Config config;
-	State state;
 
 	try {
 		std::stringstream file_contents = read_file(config_path);
@@ -206,10 +190,8 @@ int main()
 
 	conn.subscribe(i3ipc::ET_WORKSPACE);
 
-	conn.signal_workspace_event.connect([&](__attribute__((unused)) const i3ipc::workspace_event_t&) {
-		state = find_workspaces(config);
-		prepare_workspace_string(state, config);
-	});
+	conn.signal_workspace_event.connect(
+		[&](__attribute__((unused)) const i3ipc::workspace_event_t&) { update_display(config); });
 
 	try {
 		serial_port.Open(config.target_serial_port);
@@ -220,9 +202,14 @@ int main()
 
 	initialize_serial();
 
+	// wait for a bit for the Arduino to restart
+	usleep(defaults::startup_delay_ms * 1000);
+
 	try {
-		startup(state, config);
-		loop(state);
+		update_display(config);
+		for (;;) {
+			conn.handle_event();
+		}
 	} catch (const std::runtime_error&) {
 		serial_port.Close();
 		return EXIT_FAILURE;
