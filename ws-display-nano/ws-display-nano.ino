@@ -42,6 +42,13 @@ unsigned long currentMillis;
 
 const uint8_t refreshInterval = 100;
 
+void allOff()
+{
+	PORTB = 0;
+	PORTD = 0;
+	PORTC = 0;
+}
+
 void lightSegments(int number)
 {
 	PORTD = decimals[number];
@@ -142,6 +149,10 @@ void loop()
 		}
 	}
 
-	printNumber(toPrint);
+	if (toPrint.length() == 0) {
+		allOff();
+	} else {
+		printNumber(toPrint);
+	}
 }
 // vim:fdm=marker:fmr={{{,}}}
