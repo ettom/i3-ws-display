@@ -1,5 +1,9 @@
 #include "serial-commands.h"
 
+#include <i3ipc++/ipc.hpp>
+#include <json/json.h>
+#include <libserial/SerialPort.h>
+
 #include <algorithm>
 #include <fstream>
 #include <iostream>
@@ -7,10 +11,6 @@
 #include <stdexcept>
 #include <string>
 #include <unistd.h>
-
-#include <i3ipc++/ipc.hpp>
-#include <json/json.h>
-#include <libserial/SerialPort.h>
 
 namespace defaults
 {
