@@ -205,14 +205,9 @@ int main()
 	// wait for a bit for the Arduino to restart
 	usleep(defaults::startup_delay_ms * 1000);
 
-	try {
-		update_display(config);
-		for (;;) {
-			conn.handle_event();
-		}
-	} catch (const std::runtime_error&) {
-		serial_port.Close();
-		return EXIT_FAILURE;
+	update_display(config);
+	for (;;) {
+		conn.handle_event();
 	}
 
 	return EXIT_SUCCESS;
