@@ -37,8 +37,8 @@ String toPrint = "8888";
 
 int8_t visibleWorkspace = -1;
 
-unsigned long startMillis;
-unsigned long currentMillis;
+unsigned long startMillis = 0;
+unsigned long currentMillis = 0;
 
 const uint8_t refreshInterval = 100;
 
