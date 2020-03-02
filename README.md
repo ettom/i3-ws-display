@@ -39,6 +39,8 @@ schematic](https://github.com/ettom/i3-ws-display/blob/master/ws-display-nano/fr
 
 
 ## Software setup
+Arch Linux users can use the provided `PKGBUILD`.
+
 ### Dependencies
 A compiler with C++17 support ([clang-5+](http://llvm.org/releases/download.html),
 [gcc-7+](https://gcc.gnu.org/releases.html)), [cmake 3.11+](https://cmake.org/download/), [git](https://git-scm.com/downloads)
