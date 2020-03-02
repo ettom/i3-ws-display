@@ -14,7 +14,6 @@
 
 namespace defaults
 {
-const int startup_delay_ms {1500};
 const std::string config_file {"ws-display.json"};
 const std::string config_path_relative_to_home {"/.config/"};
 }
@@ -23,6 +22,7 @@ struct Config {
 	std::string target_serial_port;
 	std::string output;
 	size_t display_length;
+	unsigned int startup_delay_ms;
 };
 
 struct State {
@@ -76,6 +76,7 @@ Config parse_config_file(std::stringstream& contents)
 	config.output = root["output"].asString();
 	config.target_serial_port = root["serial_port"].asString();
 	config.display_length = root["display_length"].asUInt();
+	config.startup_delay_ms = root["startup_delay_ms"].asUInt();
 
 	return config;
 }
@@ -203,7 +204,7 @@ int main()
 	initialize_serial();
 
 	// wait for a bit for the Arduino to restart
-	usleep(defaults::startup_delay_ms * 1000);
+	usleep(config.startup_delay_ms * 1000);
 
 	update_display(config);
 	for (;;) {

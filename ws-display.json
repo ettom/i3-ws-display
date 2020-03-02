@@ -1,5 +1,6 @@
 {
-    "output" : "",
-    "display_length" : 4,
-    "serial_port" : "/dev/wsdisplay"
+	"output" : "",
+	"display_length" : 4,
+	"serial_port" : "/dev/wsdisplay",
+	"startup_delay_ms" : 1500
 }

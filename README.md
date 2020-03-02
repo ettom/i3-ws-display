@@ -73,6 +73,7 @@ Copy `ws-display.json` to `~/.config` or to `$XDG_CONFIG_HOME`. Modify it to mat
   `xrandr`.
 * `display_length` - Number of digits on your 7-segment display.
 * `serial_port` - Serial port your Arduino is connected to.
+* `startup_delay_ms` - Milliseconds to wait for the Arduino to restart on initial connection.
 
 You'll probably want to write an udev rule for the Arduino. Otherwise it might not
 always get bound to the same `/dev` node.<br>
