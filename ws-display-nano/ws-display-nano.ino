@@ -37,16 +37,13 @@ String toPrint = "8888";
 
 int8_t visibleWorkspace = -1;
 
-unsigned long startMillis = 0;
-unsigned long currentMillis = 0;
+unsigned long startMillis = 0, currentMillis = 0;
 
 const uint8_t refreshInterval = 100;
 
 void allOff()
 {
-	PORTB = 0;
-	PORTD = 0;
-	PORTC = 0;
+	PORTB = PORTD = PORTC = 0;
 }
 
 void lightSegments(int number)
