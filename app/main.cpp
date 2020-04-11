@@ -14,15 +14,15 @@
 
 namespace defaults
 {
-const std::string config_file {"ws-display.json"};
-const std::string config_path_relative_to_home {"/.config/"};
+inline constexpr const char* config_file {"ws-display.json"};
+inline constexpr const char* config_path_relative_to_home {"/.config/"};
 }
 
 struct Config {
 	std::string target_serial_port;
 	std::string output;
-	size_t display_length;
-	unsigned int startup_delay_ms;
+	size_t display_length {};
+	unsigned int startup_delay_ms {};
 };
 
 struct State {
