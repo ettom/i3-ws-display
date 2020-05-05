@@ -14,8 +14,8 @@
 
 namespace defaults
 {
-inline constexpr const char* config_file {"ws-display.json"};
-inline constexpr const char* config_path_relative_to_home {"/.config/"};
+constexpr const char* config_file {"ws-display.json"};
+constexpr const char* config_path_relative_to_home {"/.config/"};
 }
 
 struct Config {
@@ -36,17 +36,11 @@ i3ipc::connection conn;
 
 std::string get_config_path()
 {
-	std::string config_path;
-	const auto xdg_config_home = std::getenv("XDG_CONFIG_HOME");
-	if (xdg_config_home != nullptr) {
-		config_path = std::string(xdg_config_home) + '/';
-	} else {
-		config_path = std::string(std::getenv("HOME")) + defaults::config_path_relative_to_home;
-	}
-
-	config_path += defaults::config_file;
-
-	return config_path;
+	const char* xdg_config_home = std::getenv("XDG_CONFIG_HOME");
+	const std::string path = (xdg_config_home == nullptr)
+					 ? std::string(std::getenv("HOME")) + defaults::config_path_relative_to_home
+					 : std::string(xdg_config_home) + '/';
+	return path + defaults::config_file;
 }
 
 std::stringstream read_file(const std::string& filename)
@@ -83,8 +77,8 @@ Config parse_config_file(std::stringstream& contents)
 
 void send_to_arduino(const State& state)
 {
-	std::string payload {state.workspaces + serial_commands::workspaces_sent + state.visible
-			     + serial_commands::visible_sent};
+	const std::string payload {state.workspaces + serial_commands::workspaces_sent + state.visible
+				   + serial_commands::visible_sent};
 
 	serial_port.Write(payload);
 	serial_port.DrainWriteBuffer();
@@ -101,8 +95,8 @@ void initialize_serial()
 
 void ensure_visible_workspace_displayed(State& state, size_t display_length)
 {
-	bool doesnt_fit_on_display = state.workspaces.length() > display_length;
-	bool visible_workspace_not_displayed = state.workspaces.find(state.visible) > display_length - 1;
+	const bool doesnt_fit_on_display = state.workspaces.length() > display_length;
+	const bool visible_workspace_not_displayed = state.workspaces.find(state.visible) > display_length - 1;
 	if (doesnt_fit_on_display && visible_workspace_not_displayed) {
 		state.workspaces.erase(state.workspaces.find(state.visible), 1);
 		state.workspaces.insert(display_length - 1, 1, state.visible);
