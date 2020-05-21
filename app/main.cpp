@@ -92,57 +92,50 @@ void initialize_serial(SerialPort& serial_port)
 	serial_port.SetStopBits(StopBits::STOP_BITS_1);
 }
 
-void ensure_visible_workspace_displayed(State& state, size_t display_length)
-{
-	const bool doesnt_fit_on_display = state.workspaces.length() > display_length;
-	const bool visible_workspace_not_displayed = state.workspaces.find(state.visible) > display_length - 1;
-	if (doesnt_fit_on_display && visible_workspace_not_displayed) {
-		state.workspaces.erase(state.workspaces.find(state.visible), 1);
-		state.workspaces.insert(display_length - 1, 1, state.visible);
-	}
-}
-
-void move_0_to_end(std::string& workspaces)
-{
-	if (workspaces.length() > 0 && workspaces.at(0) == '0') {
-		workspaces.erase(0, 1);
-		workspaces.insert(workspaces.length(), "0");
-	}
-}
-
 void prepare_workspaces(State& state, const Config& config)
 {
+	if (state.workspaces.length() == 0) {
+		return;
+	}
+
 	std::sort(state.workspaces.begin(), state.workspaces.end());
-	move_0_to_end(state.workspaces);
 
-	if (state.visible != serial_commands::visible_not_found) {
-		ensure_visible_workspace_displayed(state, config.display_length);
+	if (state.workspaces.at(0) == '0') {
+		state.workspaces.erase(0, 1);
+		state.workspaces.insert(state.workspaces.length(), "0");
 	}
 
-	if (state.workspaces.size() > config.display_length) {
-		state.workspaces.resize(config.display_length);
-	}
-}
-
-std::string ensure_workspace_name_is_numeric(const std::string& workspace_name)
-{
-	const size_t n {workspace_name.find_first_of("0123456789")};
-	if (n == std::string::npos) {
-		throw std::logic_error("Workspace names must contain at least one numeric character!");
+	if (state.workspaces.length() <= config.display_length) {
+		return;
 	}
 
-	const size_t m {workspace_name.find_first_not_of("0123456789", n)};
-	return workspace_name.substr(n, (m == std::string::npos) ? m : m - n);
-}
+	const bool visible_workspace_not_displayed =
+		state.visible != serial_commands::visible_not_found
+		&& (state.workspaces.find(state.visible) > config.display_length - 1);
 
-char prepare_workspace_name(const std::string& workspace_name)
-{
-	const std::string result = ensure_workspace_name_is_numeric(workspace_name);
-	return (result == "10") ? '0' : result.at(0);
+	if (visible_workspace_not_displayed) {
+		// ensure that the visible workspace is displayed
+		state.workspaces.erase(state.workspaces.find(state.visible), 1);
+		state.workspaces.insert(config.display_length - 1, 1, state.visible);
+	}
+
+	state.workspaces.resize(config.display_length);
 }
 
 State find_workspaces(const Config& config)
 {
+	static auto prepare_workspace_name = [](const std::string& workspace_name) {
+		const size_t n {workspace_name.find_first_of("0123456789")};
+		if (n == std::string::npos) {
+			throw std::logic_error("Workspace names must contain at least one numeric character!");
+		}
+
+		const size_t m {workspace_name.find_first_not_of("0123456789", n)};
+
+		const std::string result = workspace_name.substr(n, (m == std::string::npos) ? m : m - n);
+		return (result == "10") ? '0' : result.at(0);
+	};
+
 	State state {};
 	state.visible = serial_commands::visible_not_found;
 
