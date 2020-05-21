@@ -31,7 +31,6 @@ struct State {
 };
 
 using namespace LibSerial;
-i3ipc::connection conn;
 
 std::string get_config_path()
 {
@@ -122,7 +121,7 @@ void prepare_workspaces(State& state, const Config& config)
 	state.workspaces.resize(config.display_length);
 }
 
-State find_workspaces(const Config& config)
+State find_workspaces(const Config& config, const i3ipc::connection& conn)
 {
 	static auto prepare_workspace_name = [](const std::string& workspace_name) {
 		const size_t n {workspace_name.find_first_of("0123456789")};
@@ -155,19 +154,17 @@ State find_workspaces(const Config& config)
 	return state;
 }
 
-void update_display(const Config& config, SerialPort& serial_port)
+void update_display(const Config& config, const i3ipc::connection& conn, SerialPort& serial_port)
 {
-	State state {find_workspaces(config)};
+	State state {find_workspaces(config, conn)};
 	prepare_workspaces(state, config);
 	send_to_arduino(state, serial_port);
 }
 
 int main()
 {
-	const std::string config_path = get_config_path();
 	Config config;
-	SerialPort serial_port;
-
+	const std::string config_path = get_config_path();
 	try {
 		std::stringstream file_contents = read_file(config_path);
 		config = parse_config_file(file_contents);
@@ -176,11 +173,7 @@ int main()
 		return EXIT_FAILURE;
 	}
 
-	conn.subscribe(i3ipc::ET_WORKSPACE);
-
-	conn.signal_workspace_event.connect(
-		[&](__attribute__((unused)) const i3ipc::workspace_event_t&) { update_display(config, serial_port); });
-
+	SerialPort serial_port;
 	try {
 		serial_port.Open(config.target_serial_port);
 	} catch (const OpenFailed&) {
@@ -190,10 +183,17 @@ int main()
 
 	initialize_serial(serial_port);
 
+	i3ipc::connection conn;
+	conn.subscribe(i3ipc::ET_WORKSPACE);
+
+	conn.signal_workspace_event.connect([&](__attribute__((unused)) const i3ipc::workspace_event_t&) {
+		update_display(config, conn, serial_port);
+	});
+
 	// wait for a bit for the Arduino to restart
 	usleep(config.startup_delay_ms * 1000);
 
-	update_display(config, serial_port);
+	update_display(config, conn, serial_port);
 	for (;;) {
 		conn.handle_event();
 	}
