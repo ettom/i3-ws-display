@@ -31,7 +31,6 @@ struct State {
 };
 
 using namespace LibSerial;
-SerialPort serial_port;
 i3ipc::connection conn;
 
 std::string get_config_path()
@@ -75,7 +74,7 @@ Config parse_config_file(std::stringstream& contents)
 	return config;
 }
 
-void send_to_arduino(const State& state)
+void send_to_arduino(const State& state, SerialPort& serial_port)
 {
 	const std::string payload {state.workspaces + serial_commands::workspaces_sent + state.visible
 				   + serial_commands::visible_sent};
@@ -84,7 +83,7 @@ void send_to_arduino(const State& state)
 	serial_port.DrainWriteBuffer();
 }
 
-void initialize_serial()
+void initialize_serial(SerialPort& serial_port)
 {
 	serial_port.SetBaudRate(BaudRate::BAUD_9600);
 	serial_port.SetCharacterSize(CharacterSize::CHAR_SIZE_8);
@@ -163,17 +162,18 @@ State find_workspaces(const Config& config)
 	return state;
 }
 
-void update_display(const Config& config)
+void update_display(const Config& config, SerialPort& serial_port)
 {
 	State state {find_workspaces(config)};
 	prepare_workspaces(state, config);
-	send_to_arduino(state);
+	send_to_arduino(state, serial_port);
 }
 
 int main()
 {
 	const std::string config_path = get_config_path();
 	Config config;
+	SerialPort serial_port;
 
 	try {
 		std::stringstream file_contents = read_file(config_path);
@@ -186,7 +186,7 @@ int main()
 	conn.subscribe(i3ipc::ET_WORKSPACE);
 
 	conn.signal_workspace_event.connect(
-		[&](__attribute__((unused)) const i3ipc::workspace_event_t&) { update_display(config); });
+		[&](__attribute__((unused)) const i3ipc::workspace_event_t&) { update_display(config, serial_port); });
 
 	try {
 		serial_port.Open(config.target_serial_port);
@@ -195,12 +195,12 @@ int main()
 		return EXIT_FAILURE;
 	}
 
-	initialize_serial();
+	initialize_serial(serial_port);
 
 	// wait for a bit for the Arduino to restart
 	usleep(config.startup_delay_ms * 1000);
 
-	update_display(config);
+	update_display(config, serial_port);
 	for (;;) {
 		conn.handle_event();
 	}
