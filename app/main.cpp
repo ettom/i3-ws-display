@@ -176,26 +176,30 @@ int main()
 	SerialPort serial_port;
 	try {
 		serial_port.Open(config.target_serial_port);
+		initialize_serial(serial_port);
 	} catch (const OpenFailed&) {
 		std::cerr << "The serial port " << config.target_serial_port << " did not open correctly." << std::endl;
 		return EXIT_FAILURE;
 	}
 
-	initialize_serial(serial_port);
-
-	i3ipc::connection conn;
-	conn.subscribe(i3ipc::ET_WORKSPACE);
-
-	conn.signal_workspace_event.connect([&](__attribute__((unused)) const i3ipc::workspace_event_t&) {
-		update_display(config, conn, serial_port);
-	});
-
 	// wait for a bit for the Arduino to restart
 	usleep(config.startup_delay_ms * 1000);
 
-	update_display(config, conn, serial_port);
-	for (;;) {
-		conn.handle_event();
+	try {
+		i3ipc::connection conn;
+
+		conn.signal_workspace_event.connect([&](__attribute__((unused)) const i3ipc::workspace_event_t&) {
+			update_display(config, conn, serial_port);
+		});
+		conn.subscribe(i3ipc::ET_WORKSPACE);
+
+		update_display(config, conn, serial_port);
+		for (;;) {
+			conn.handle_event();
+		}
+	} catch (const std::runtime_error& e) {
+		std::cerr << e.what() << std::endl;
+		return EXIT_FAILURE;
 	}
 
 	return EXIT_SUCCESS;
