@@ -1,3 +1,5 @@
+#pragma once
+
 namespace serial_commands
 {
 const char workspaces_sent {'w'};

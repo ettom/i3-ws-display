@@ -28,14 +28,20 @@ well for me.
 #### Setup
 Connect the display to your Arduino. If you want the numbers on the display to align
 left, change the `ALIGN_TO_RIGHT` symbol to `false` in `nano/7seg.ino`. Then flash
-the file to your Arduino.<br>
+the file to your Arduino using [PlatformIO](https://platformio.org/). To do that, run
+the following commands in the root directory of the project:
+```
+cd uc
+pio run -t upload
+```
+
 Wiring for a common-cathode display with the following pin arrangement (according
 to the [typical segment identification](https://commons.wikimedia.org/wiki/File:7_Segment_Display_with_Labeled_Segments.svg#/media/File:7_Segment_Display_with_Labeled_Segments.svg)):<br>
 **Top row** - 1, a, f, 2, 3, b <br>
 **Bottom row** - e, d, DP, c, g, 4
 
 ![Fritzing
-schematic](https://github.com/ettom/i3-ws-display/blob/master/ws-display-nano/fritzing.png)
+schematic](https://github.com/ettom/i3-ws-display/blob/master/uc/fritzing.png)
 
 
 ## Software setup
