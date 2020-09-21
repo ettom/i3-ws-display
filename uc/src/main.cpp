@@ -32,14 +32,11 @@ const uint8_t decimals[10] = {SEG_A | SEG_B | SEG_C | SEG_D | SEG_E | SEG_F,
 
 const uint8_t coms[DISPLAY_LENGTH] = {COM_1, COM_2, COM_3, COM_4};
 
-String inputString = "";
-String toPrint = "8888";
-
-int8_t visibleWorkspace = -1;
-
+const uint8_t refreshInterval = 100;
 unsigned long startMillis = 0, currentMillis = 0;
 
-const uint8_t refreshInterval = 100;
+String inputString = "";
+String toPrint = "8888", visibleWorkspaces = "8888";
 
 void allOff()
 {
@@ -57,12 +54,15 @@ void lightDigit(int index)
 	PORTB = coms[index];
 }
 
-void lightDotIfVisible(int number)
+void lightDotIfVisible(int digit)
 {
-	if (number == visibleWorkspace) {
-		PORTC |= SEG_DP;
-	} else {
-		PORTC &= ~SEG_DP;
+	for (int i = 0; i < visibleWorkspaces.length(); ++i) {
+		if (visibleWorkspaces[i] - '0' == digit) {
+			PORTC |= SEG_DP;
+			return;
+		} else {
+			PORTC &= ~SEG_DP;
+		}
 	}
 }
 
@@ -95,8 +95,7 @@ void printNumber(String number)
 
 bool isValidCmd(char c)
 {
-	return isDigit(c) || (c == serial_commands::workspaces_sent) || (c == serial_commands::visible_sent)
-	       || (c == serial_commands::visible_not_found);
+	return isDigit(c) || (c == serial_commands::workspaces_sent) || (c == serial_commands::visible_sent);
 }
 
 void setup() // {{{1
@@ -123,7 +122,7 @@ void setup() // {{{1
 	//-----------1234
 	DDRB = 0b00001111; // pins D11-D8
 
-	Serial.begin(9600);
+	Serial.begin(19200);
 } // 1}}}
 
 void loop()
@@ -138,8 +137,7 @@ void loop()
 			toPrint = inputString;
 			inputString = "";
 		} else if (inChar == serial_commands::visible_sent) {
-			char last = inputString[0];
-			visibleWorkspace = (last == serial_commands::visible_not_found) ? -1 : last - '0';
+			visibleWorkspaces = inputString;
 			inputString = "";
 		} else {
 			inputString += inChar;

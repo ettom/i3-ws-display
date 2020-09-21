@@ -27,7 +27,7 @@ struct Config {
 
 struct State {
 	std::string workspaces;
-	char visible;
+	std::string visible;
 };
 
 using namespace LibSerial;
@@ -84,7 +84,7 @@ void send_to_arduino(const State& state, SerialPort& serial_port)
 
 void initialize_serial(SerialPort& serial_port)
 {
-	serial_port.SetBaudRate(BaudRate::BAUD_9600);
+	serial_port.SetBaudRate(BaudRate::BAUD_19200);
 	serial_port.SetCharacterSize(CharacterSize::CHAR_SIZE_8);
 	serial_port.SetFlowControl(FlowControl::FLOW_CONTROL_NONE);
 	serial_port.SetParity(Parity::PARITY_NONE);
@@ -93,9 +93,22 @@ void initialize_serial(SerialPort& serial_port)
 
 void prepare_workspaces(State& state, const Config& config)
 {
-	if (state.workspaces.length() == 0) {
+	if (state.workspaces.empty() || state.workspaces.length() <= config.display_length) {
 		return;
 	}
+
+	state.workspaces = [&]() { // ensure the maximum possible amount of visible workspaces are displayed
+		std::string tmp = state.visible;
+		for (auto c : state.workspaces) {
+			if (tmp.length() == config.display_length) {
+				break;
+			}
+			if (tmp.find(c) == std::string::npos) {
+				tmp += c;
+			}
+		}
+		return tmp;
+	}();
 
 	std::sort(state.workspaces.begin(), state.workspaces.end());
 
@@ -103,22 +116,6 @@ void prepare_workspaces(State& state, const Config& config)
 		state.workspaces.erase(0, 1);
 		state.workspaces.insert(state.workspaces.length(), "0");
 	}
-
-	if (state.workspaces.length() <= config.display_length) {
-		return;
-	}
-
-	const bool visible_workspace_not_displayed =
-		state.visible != serial_commands::visible_not_found
-		&& (state.workspaces.find(state.visible) > config.display_length - 1);
-
-	if (visible_workspace_not_displayed) {
-		// ensure that the visible workspace is displayed
-		state.workspaces.erase(state.workspaces.find(state.visible), 1);
-		state.workspaces.insert(config.display_length - 1, 1, state.visible);
-	}
-
-	state.workspaces.resize(config.display_length);
 }
 
 State find_workspaces(const Config& config, const i3ipc::connection& conn)
@@ -136,7 +133,7 @@ State find_workspaces(const Config& config, const i3ipc::connection& conn)
 	};
 
 	State state {};
-	state.visible = serial_commands::visible_not_found;
+	state.visible = "";
 
 	for (const auto& workspace : conn.get_workspaces()) {
 		if (!config.output.empty() && workspace->output != config.output) {
@@ -145,7 +142,7 @@ State find_workspaces(const Config& config, const i3ipc::connection& conn)
 
 		const char workspace_number = prepare_workspace_name(workspace->name);
 		if (workspace->visible) {
-			state.visible = workspace_number;
+			state.visible += workspace_number;
 		}
 
 		state.workspaces += workspace_number;
