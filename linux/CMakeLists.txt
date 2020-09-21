@@ -19,7 +19,7 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall")
 endif()
 
-add_subdirectory(app)
+add_subdirectory(src)
 
 include(FetchContent)
 FetchContent_Declare(i3ipcpp

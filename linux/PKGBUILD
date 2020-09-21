@@ -1,6 +1,6 @@
 pkgname=i3-ws-display-git
 _pkgname=ws-display
-pkgver=0.0.1
+pkgver=0.0.2
 pkgrel=1
 pkgdesc="Display active i3 workspaces on a 7-segment display"
 arch=('x86_64')
@@ -12,15 +12,15 @@ source=("${_pkgname}::git+${url}.git")
 md5sums=("SKIP")
 
 prepare() {
-	mkdir -p "${_pkgname}/build"
+	mkdir -p "${_pkgname}/linux/build"
 }
 
 build() {
-	cd "${_pkgname}/build" || exit 1
+	cd "${_pkgname}/linux/build" || exit 1
 	cmake -DCMAKE_INSTALL_PREFIX=/usr ..
 	cmake --build .
 }
 
 package() {
-	cmake --build "${_pkgname}/build" --target install -- DESTDIR="${pkgdir}"
+	cmake --build "${_pkgname}/linux/build" --target install -- DESTDIR="${pkgdir}"
 }

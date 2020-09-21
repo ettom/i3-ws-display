@@ -63,8 +63,7 @@ which is pulled and built automatically by cmake.
 ### Building
 Run the following commands:
 ```
-git clone https://github.com/ettom/i3-ws-display.git
-cd i3-ws-display
+cd linux
 mkdir build && cd build
 cmake ..
 make
