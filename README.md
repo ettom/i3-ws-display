@@ -5,7 +5,7 @@ A set of programs and configuration files for displaying i3 workspaces on a disp
 controlled by an Arduino Nano.
 
 ## Background
-I started using a secondary monitor and I didn't want to waste screen real estate for
+I started using a secondary monitor and didn't want to waste screen real estate for
 a status bar on it. However, peeking at the other monitor to see which workspaces
 are active felt awkward. This led me to create this project. The end
 result is a 4-digit 7-segment display that shows the active workspaces, mounted on
@@ -27,7 +27,7 @@ well for me.
 
 #### Setup
 Connect the display to your Arduino. If you want the numbers on the display to align
-left, change the `ALIGN_TO_RIGHT` symbol to `false` in `nano/7seg.ino`. Then flash
+left, change the `ALIGN_TO_RIGHT` symbol to `false` in `uc/src/main.cpp`. Then flash
 the file to your Arduino using [PlatformIO](https://platformio.org/). To do that, run
 the following commands in the root directory of the project:
 ```
