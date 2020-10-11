@@ -4,6 +4,7 @@
 
 constexpr bool align_to_right = true;
 constexpr uint8_t display_length = 4;
+constexpr uint16_t urgent_blink_interval_ms = 700;
 
 enum segment {
 	seg_A = 0x80,
@@ -32,10 +33,12 @@ const uint8_t decimals[10] = {seg_A | seg_B | seg_C | seg_D | seg_E | seg_F,
 const uint8_t coms[display_length] = {com_1, com_2, com_3, com_4};
 
 const uint8_t refresh_interval = 100;
-unsigned long start_millis = 0, current_millis = 0;
+unsigned long start_millis = 0, current_millis = 0, urgent_millis = 0;
 
-String to_print = "8888", visible_workspaces = "8888";
 String rx_buf = "";
+String to_print = "8888", visible_workspaces = "8888", urgent_workspaces = "";
+
+bool urgent_on = false;
 
 void all_off()
 {
@@ -57,22 +60,28 @@ void light_index(int index)
 	PORTB = coms[index];
 }
 
-void light_dot_if_visible(int digit)
+void light_dot(int index, int digit)
 {
-	for (size_t i = 0; i < visible_workspaces.length(); ++i) {
-		if (visible_workspaces[i] - '0' == digit) {
-			PORTC |= seg_DP;
-			return;
-		} else {
-			PORTC &= ~seg_DP;
+	static auto contains = [](const String& s, int to_search) {
+		for (size_t i = 0; i < s.length(); ++i) {
+			if (s[i] - '0' == to_search) {
+				return true;
+			}
 		}
+		return false;
+	};
+
+	if (contains(visible_workspaces, digit) || (urgent_on && contains(urgent_workspaces, digit))) {
+		PORTC |= seg_DP;
+	} else {
+		PORTC &= ~seg_DP;
 	}
 }
 
 void print_digit(int index, int digit)
 {
+	light_dot(index, digit);
 	light_segments(digit);
-	light_dot_if_visible(digit);
 	light_index(index);
 	delay(2);
 }
@@ -98,7 +107,8 @@ void print_number(const String& number)
 
 bool is_valid_cmd(char c)
 {
-	return isDigit(c) || (c == serial_commands::workspaces_sent) || (c == serial_commands::visible_sent);
+	return isDigit(c) || (c == serial_commands::workspaces_sent) || (c == serial_commands::visible_sent)
+	       || (c == serial_commands::urgent_sent);
 }
 
 void setup() // {{{1
@@ -142,6 +152,9 @@ void loop()
 		} else if (in_char == serial_commands::visible_sent) {
 			visible_workspaces = rx_buf;
 			rx_buf = "";
+		} else if (in_char == serial_commands::urgent_sent) {
+			urgent_workspaces = rx_buf;
+			rx_buf = "";
 		} else {
 			rx_buf += in_char;
 		}
@@ -151,6 +164,11 @@ void loop()
 		all_off();
 	} else {
 		print_number(to_print);
+	}
+
+	if (millis() - urgent_millis > urgent_blink_interval_ms) {
+		urgent_millis = millis();
+		urgent_on = !urgent_on;
 	}
 }
 // vim:fdm=marker:fmr={{{,}}}

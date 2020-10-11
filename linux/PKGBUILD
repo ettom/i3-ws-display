@@ -1,6 +1,6 @@
 pkgname=i3-ws-display-git
 _pkgname=ws-display
-pkgver=0.0.2
+pkgver=0.0.3
 pkgrel=1
 pkgdesc="Display active i3 workspaces on a 7-segment display"
 arch=('x86_64')

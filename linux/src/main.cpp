@@ -23,11 +23,13 @@ struct Config {
 	std::string output;
 	size_t display_length {};
 	unsigned int startup_delay_ms {};
+	bool blink_on_urgent;
 };
 
 struct State {
 	std::string workspaces;
 	std::string visible;
+	std::string urgent;
 };
 
 using namespace LibSerial;
@@ -69,6 +71,7 @@ Config parse_config_file(std::stringstream& contents)
 	config.target_serial_port = root["serial_port"].asString();
 	config.display_length = root["display_length"].asUInt();
 	config.startup_delay_ms = root["startup_delay_ms"].asUInt();
+	config.blink_on_urgent = root["blink_on_urgent"].asBool();
 
 	return config;
 }
@@ -76,7 +79,7 @@ Config parse_config_file(std::stringstream& contents)
 void send_to_arduino(const State& state, SerialPort& serial_port)
 {
 	const std::string payload {state.workspaces + serial_commands::workspaces_sent + state.visible
-				   + serial_commands::visible_sent};
+				   + serial_commands::visible_sent + state.urgent + serial_commands::urgent_sent};
 
 	serial_port.Write(payload);
 	serial_port.DrainWriteBuffer();
@@ -146,6 +149,10 @@ State find_workspaces(const Config& config, const i3ipc::connection& conn)
 		const char workspace_number = prepare_workspace_name(workspace->name);
 		if (workspace->visible) {
 			state.visible += workspace_number;
+		}
+
+		if (config.blink_on_urgent && workspace->urgent) {
+			state.urgent += workspace_number;
 		}
 
 		state.workspaces += workspace_number;
