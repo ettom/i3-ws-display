@@ -93,11 +93,11 @@ void initialize_serial(SerialPort& serial_port)
 
 void prepare_workspaces(State& state, const Config& config)
 {
-	if (state.workspaces.empty() || state.workspaces.length() <= config.display_length) {
+	if (state.workspaces.empty()) {
 		return;
 	}
 
-	state.workspaces = [&]() { // ensure the maximum possible amount of visible workspaces are displayed
+	auto ensure_visible_displayed = [&]() {
 		std::string tmp = state.visible;
 		for (auto c : state.workspaces) {
 			if (tmp.length() == config.display_length) {
@@ -108,7 +108,12 @@ void prepare_workspaces(State& state, const Config& config)
 			}
 		}
 		return tmp;
-	}();
+	};
+
+	if (state.workspaces.length() > config.display_length) {
+		state.workspaces = ensure_visible_displayed();
+	}
+
 
 	std::sort(state.workspaces.begin(), state.workspaces.end());
 
