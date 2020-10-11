@@ -27,7 +27,7 @@ well for me.
 
 #### Setup
 Connect the display to your Arduino. If you want the numbers on the display to align
-left, change the `ALIGN_TO_RIGHT` symbol to `false` in `uc/src/main.cpp`. Then flash
+left, change the `align_to_right` symbol to `false` in `uc/src/main.cpp`. Then flash
 the file to your Arduino using [PlatformIO](https://platformio.org/). To do that, run
 the following commands in the root directory of the project:
 ```

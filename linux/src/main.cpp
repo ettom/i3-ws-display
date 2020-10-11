@@ -133,8 +133,6 @@ State find_workspaces(const Config& config, const i3ipc::connection& conn)
 	};
 
 	State state {};
-	state.visible = "";
-
 	for (const auto& workspace : conn.get_workspaces()) {
 		if (!config.output.empty() && workspace->output != config.output) {
 			continue;
