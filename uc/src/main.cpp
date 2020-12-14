@@ -146,16 +146,20 @@ void loop()
 			continue;
 		}
 
-		if (in_char == serial_commands::workspaces_sent) {
+		switch (in_char) {
+		case serial_commands::workspaces_sent:
 			to_print = rx_buf;
 			rx_buf = "";
-		} else if (in_char == serial_commands::visible_sent) {
+			break;
+		case serial_commands::visible_sent:
 			visible_workspaces = rx_buf;
 			rx_buf = "";
-		} else if (in_char == serial_commands::urgent_sent) {
+			break;
+		case serial_commands::urgent_sent:
 			urgent_workspaces = rx_buf;
 			rx_buf = "";
-		} else {
+			break;
+		default:
 			rx_buf += in_char;
 		}
 	}
