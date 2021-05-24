@@ -7,7 +7,7 @@ Description=ws-display service
 [Service]
 Restart=no
 EnvironmentFile=/etc/environment
-ExecStart=/usr/sbin/ws-display
+ExecStart=/usr/sbin/ws-display -p /dev/wsdisplay -b
 
 [Install]
 WantedBy=dev-wsdisplay.device i3.target

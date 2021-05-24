@@ -19,10 +19,16 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall")
 endif()
 
-add_subdirectory(src)
-
 include(FetchContent)
 FetchContent_Declare(i3ipcpp
-    GIT_REPOSITORY https://github.com/drmgc/i3ipcpp.git)
+    GIT_REPOSITORY https://github.com/drmgc/i3ipcpp.git
+    GIT_TAG v0.5)
+FetchContent_Declare(cli11
+    GIT_REPOSITORY https://github.com/CLIUtils/CLI11.git
+    GIT_TAG v1.9.1
+    )
 
 FetchContent_MakeAvailable(i3ipcpp)
+FetchContent_MakeAvailable(cli11)
+
+add_subdirectory(src)

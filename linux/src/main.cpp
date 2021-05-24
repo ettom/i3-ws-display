@@ -1,29 +1,21 @@
 #include "serial-commands.h"
 
+#include <CLI/CLI.hpp>
 #include <i3ipc++/ipc.hpp>
-#include <json/json.h>
 #include <libserial/SerialPort.h>
 
 #include <algorithm>
-#include <fstream>
 #include <iostream>
-#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <unistd.h>
 
-namespace defaults
-{
-constexpr const char* config_file {"ws-display.json"};
-constexpr const char* config_path_relative_to_home {"/.config/"};
-}
-
 struct Config {
 	std::string target_serial_port;
 	std::string output;
-	size_t display_length {};
-	unsigned int startup_delay_ms {};
-	bool blink_on_urgent;
+	size_t display_length {4};
+	unsigned int startup_delay_ms {1500};
+	bool blink_on_urgent = false;
 };
 
 struct State {
@@ -33,48 +25,6 @@ struct State {
 };
 
 using namespace LibSerial;
-
-std::string get_config_path()
-{
-	const char* xdg_config_home = std::getenv("XDG_CONFIG_HOME");
-	const std::string path = (xdg_config_home == nullptr)
-					 ? std::string(std::getenv("HOME")) + defaults::config_path_relative_to_home
-					 : std::string(xdg_config_home) + '/';
-	return path + defaults::config_file;
-}
-
-std::stringstream read_file(const std::string& filename)
-{
-	std::stringstream result;
-	std::ifstream infile(filename);
-	if (!infile.is_open()) {
-		throw std::runtime_error("Couldn't open config file at " + filename);
-	}
-
-	result << infile.rdbuf();
-
-	return result;
-}
-
-Config parse_config_file(std::stringstream& contents)
-{
-	Json::Value root;
-	Json::CharReaderBuilder builder;
-	Json::String errs;
-
-	if (!parseFromStream(builder, contents, &root, &errs)) {
-		throw std::runtime_error("Errors in config file:\n" + errs);
-	}
-
-	Config config;
-	config.output = root["output"].asString();
-	config.target_serial_port = root["serial_port"].asString();
-	config.display_length = root["display_length"].asUInt();
-	config.startup_delay_ms = root["startup_delay_ms"].asUInt();
-	config.blink_on_urgent = root["blink_on_urgent"].asBool();
-
-	return config;
-}
 
 void send_to_arduino(const State& state, SerialPort& serial_port)
 {
@@ -116,7 +66,6 @@ void prepare_workspaces(State& state, const Config& config)
 	if (state.workspaces.length() > config.display_length) {
 		state.workspaces = ensure_visible_displayed();
 	}
-
 
 	std::sort(state.workspaces.begin(), state.workspaces.end());
 
@@ -168,19 +117,33 @@ void update_display(const Config& config, const i3ipc::connection& conn, SerialP
 	send_to_arduino(state, serial_port);
 }
 
-int main()
+int main(int argc, char* argv[])
 {
+	CLI::App app {"Display active i3 workspaces on a 7-segment display"};
+	app.option_defaults()->always_capture_default();
+
 	Config config;
-	const std::string config_path = get_config_path();
-	try {
-		std::stringstream file_contents = read_file(config_path);
-		config = parse_config_file(file_contents);
-	} catch (const std::runtime_error& e) {
-		std::cerr << e.what() << std::endl;
-		return EXIT_FAILURE;
-	}
+
+	app.add_option("-o,--output", config.output, "Show workspaces only for this output");
+
+	app.add_option("-l,--display-length", config.display_length, "Number of digits on your 7-segment display")
+		->check(CLI::PositiveNumber);
+
+	app.add_option("-p,--serial_port", config.target_serial_port, "Serial port your Arduino is connected to")
+		->check(CLI::ExistingFile)
+		->required();
+
+	app.add_option("-d,--startup-delay", config.startup_delay_ms,
+		       "Milliseconds to wait for the Arduino to restart on initial connection")
+		->check(CLI::PositiveNumber);
+
+	app.add_flag("-b,--blink-urgent", config.blink_on_urgent,
+		     "Blink the dot if an application sets an urgent flag on a workspace");
+
+	CLI11_PARSE(app, argc, argv);
 
 	SerialPort serial_port;
+
 	try {
 		serial_port.Open(config.target_serial_port);
 		initialize_serial(serial_port);
